@@ -9,6 +9,7 @@ import lv.st.sbogdano.popularmovies.AppExecutors;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.database.MoviesDao;
 import lv.st.sbogdano.popularmovies.data.network.MoviesNetworkDataSource;
+import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
 
 import static android.content.ContentValues.TAG;
 
@@ -60,16 +61,16 @@ public class MoviesRepository {
         return sInstance;
     }
 
-    public LiveData<List<MovieEntry>> getMovies() {
-        initializeData();
+    public LiveData<List<MovieEntry>> getMovies(MoviesTypeProvider type) {
+        initializeData(type);
         return mMoviesDao.getMovies();
-    }
-
-    public synchronized void initializeData() {
-        mMoviesNetworkDataSource.fetchMovies();
     }
 
     public LiveData<MovieEntry> getMovieDetails(int movieId) {
         return mMoviesDao.getMovieDetails(movieId);
+    }
+
+    public synchronized void initializeData(MoviesTypeProvider type) {
+        mMoviesNetworkDataSource.fetchMovies(type);
     }
 }

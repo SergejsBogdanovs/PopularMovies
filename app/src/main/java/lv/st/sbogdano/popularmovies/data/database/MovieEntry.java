@@ -4,12 +4,14 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
- * Defines the schema of a table in {@link Room} for a single movie.
+ * Defines the schema of a table in {@link android.arch.persistence.room.Room} for a single movie.
  */
 @Entity(tableName = "movies", indices = {@Index(value = {"movieId"}, unique = true)})
-public class MovieEntry {
+public class MovieEntry{
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -80,4 +82,5 @@ public class MovieEntry {
     public double getVoteAverage() {
         return voteAverage;
     }
+
 }

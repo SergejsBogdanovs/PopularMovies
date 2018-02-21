@@ -15,33 +15,58 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.model.content.Movie;
+import lv.st.sbogdano.popularmovies.utilities.Images;
 
 /**
- * Created by sbogdano on 17/02/2018.
+ * Exposes a list of movies forecasts from a list of {@link MovieEntry} to a {@link
+ * RecyclerView}.
  */
 public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder> {
+
+    private final int mImageWidth;
+    private final int mImageHeight;
 
     private List<MovieEntry> mMovies;
     private Context mContext;
 
-    public MoviesAdapter(Context context) {
+    private final MoviesAdapterOnItemClickHandler mClickHandler;
+
+    public interface MoviesAdapterOnItemClickHandler {
+        void onItemClick(int movieId);
+    }
+
+    public MoviesAdapter(Context context,
+                         MoviesAdapterOnItemClickHandler clickHandler,
+                         List<MovieEntry> movies,
+                         int imageWidth,
+                         int imageHeight) {
         mContext = context;
+        mClickHandler = clickHandler;
+        mMovies = movies;
+        mImageWidth = imageWidth;
+        mImageHeight = imageHeight;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
-        View movieView = inflater.inflate(R.layout.movie_item, parent, false);
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        View movieView = inflater.inflate(R.layout.image_item, parent, false);
+        ImageView imageView = movieView.findViewById(R.id.image);
+        ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
+        layoutParams.height = mImageHeight;
+        layoutParams.width = mImageWidth;
+        imageView.requestLayout();
 
         return new ViewHolder(movieView);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Picasso.with(mContext)
-                .load("https://image.tmdb.org/t/p/w185" + mMovies.get(position).getPosterPath())
-                .into(holder.moviePoster);
+        MovieEntry movie = mMovies.get(position);
+        Images.loadMovie(holder.moviePoster, movie, Images.WIDTH_185);
+        Images.fetch(movie.getPosterPath(), Images.WIDTH_780);
     }
 
     @Override
@@ -53,21 +78,27 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
     }
 
     public void swapMovies(final List<MovieEntry> newMovies) {
-        if (mMovies == null) {
-            mMovies = newMovies;
-            notifyDataSetChanged();
-        }
+        mMovies.clear();
+        mMovies.addAll(newMovies);
+        notifyDataSetChanged();
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-        @BindView(R.id.moviePoster)
-        ImageView moviePoster;
+        @BindView(R.id.image) ImageView moviePoster;
 
         public ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            int adapterPosition = getAdapterPosition();
+            int movieId = mMovies.get(adapterPosition).getMovieId();
+            mClickHandler.onItemClick(movieId);
         }
     }
 }

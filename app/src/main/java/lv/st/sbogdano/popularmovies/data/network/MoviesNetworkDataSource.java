@@ -22,6 +22,7 @@ import lv.st.sbogdano.popularmovies.data.model.content.Movie;
 import lv.st.sbogdano.popularmovies.data.model.response.MoviesResponse;
 import lv.st.sbogdano.popularmovies.utilities.MoviesParser;
 import lv.st.sbogdano.popularmovies.utilities.MoviesPreferences;
+import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -65,9 +66,13 @@ public class MoviesNetworkDataSource {
         return mDownloadedMovies;
     }
 
-    public void fetchMovies() {
+    public void fetchMovies(MoviesTypeProvider type) {
 
-        String moviesType = MoviesPreferences.getPreferredMoviesType(mContext);
+        String moviesType = mContext.getString(R.string.settings_movie_default_type);
+
+        if (type == MoviesTypeProvider.TOP_RATED) {
+            moviesType = mContext.getString(R.string.settings_movie_top_rated);
+        }
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);

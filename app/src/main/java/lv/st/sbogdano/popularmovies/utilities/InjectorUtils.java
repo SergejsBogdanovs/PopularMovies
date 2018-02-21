@@ -6,6 +6,8 @@ import lv.st.sbogdano.popularmovies.data.MoviesRepository;
 import lv.st.sbogdano.popularmovies.data.database.MoviesDatabase;
 import lv.st.sbogdano.popularmovies.data.model.content.Movie;
 import lv.st.sbogdano.popularmovies.data.network.MoviesNetworkDataSource;
+import lv.st.sbogdano.popularmovies.ui.detail.DetailViewModelFactory;
+import lv.st.sbogdano.popularmovies.ui.list.MainActivityViewModel;
 import lv.st.sbogdano.popularmovies.ui.list.MainViewModelFactory;
 
 /**
@@ -29,10 +31,10 @@ public class InjectorUtils {
         return MoviesNetworkDataSource.getInstance(context.getApplicationContext(), executors);
     }
 
-//    public static DetailViewModelFactory provideDetailViewModelFactory(Context context, Movie movie) {
-//        MoviesRepository repository = provideRepository(context.getApplicationContext());
-//        return new DetailViewModelFactory(repository, movie);
-//    }
+    public static DetailViewModelFactory provideDetailViewModelFactory(Context context, int movieId) {
+        MoviesRepository repository = provideRepository(context.getApplicationContext());
+        return new DetailViewModelFactory(repository, movieId);
+    }
 
     public static MainViewModelFactory provideMainActivityViewModelFactory(Context context) {
         MoviesRepository repository = provideRepository(context.getApplicationContext());
