@@ -4,11 +4,7 @@ import java.util.List;
 
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.model.content.Movie;
-import lv.st.sbogdano.popularmovies.data.model.response.MoviesResponse;
 
-/**
- * Created by sbogdano on 19/02/2018.
- */
 public class MoviesParser {
 
     public static MovieEntry[] parse(List<Movie> movies) {

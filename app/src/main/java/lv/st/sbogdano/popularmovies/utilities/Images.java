@@ -9,9 +9,6 @@ import lv.st.sbogdano.popularmovies.AppDelegate;
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 
-/**
- * Created by sbogdano on 21/02/2018.
- */
 public final class Images {
     public static final String WIDTH_185 = "w185";
     public static final String WIDTH_780 = "w780";
@@ -41,4 +38,6 @@ public final class Images {
                 .fetch();
     }
 
+    public static void loadImageIntoAppBar(ImageView imageView, MovieEntry movie) {
+    }
 }

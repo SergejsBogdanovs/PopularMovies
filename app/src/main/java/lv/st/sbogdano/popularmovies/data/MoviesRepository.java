@@ -1,7 +1,6 @@
 package lv.st.sbogdano.popularmovies.data;
 
 import android.arch.lifecycle.LiveData;
-import android.util.Log;
 
 import java.util.List;
 
@@ -10,8 +9,6 @@ import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.database.MoviesDao;
 import lv.st.sbogdano.popularmovies.data.network.MoviesNetworkDataSource;
 import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Handles data operations in PopularMovies. Acts as a mediator between {@link MoviesNetworkDataSource}
@@ -38,14 +35,12 @@ public class MoviesRepository {
         // As long as the repository exists, observe the network LiveData.
         // If that LiveData changes, update the database.
         LiveData<MovieEntry[]> networkData = mMoviesNetworkDataSource.getMovies();
-        networkData.observeForever(newMoviesFromNetwork -> {
-            mExecutors.diskIO().execute(() -> {
-                // delete old data
-                mMoviesDao.deleteOldMovies();
-                // Insert our new movies data into database
-                mMoviesDao.bulkInsert(newMoviesFromNetwork);
-            });
-        });
+        networkData.observeForever(newMoviesFromNetwork -> mExecutors.diskIO().execute(() -> {
+            // delete old data
+            mMoviesDao.deleteOldMovies();
+            // Insert our new movies data into database
+            mMoviesDao.bulkInsert(newMoviesFromNetwork);
+        }));
     }
 
     public synchronized static MoviesRepository getInstance(
@@ -66,9 +61,9 @@ public class MoviesRepository {
         return mMoviesDao.getMovies();
     }
 
-    public LiveData<MovieEntry> getMovieDetails(int movieId) {
-        return mMoviesDao.getMovieDetails(movieId);
-    }
+//    public LiveData<MovieEntry> getMovieDetails(int movieId) {
+//        return mMoviesDao.getMovieDetails(movieId);
+//    }
 
     public synchronized void initializeData(MoviesTypeProvider type) {
         mMoviesNetworkDataSource.fetchMovies(type);

@@ -7,13 +7,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,25 +21,23 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.model.content.Movie;
 import lv.st.sbogdano.popularmovies.ui.detail.DetailActivity;
-import lv.st.sbogdano.popularmovies.ui.settings.Preferences;
 import lv.st.sbogdano.popularmovies.ui.settings.SettingsActivity;
 import lv.st.sbogdano.popularmovies.utilities.InjectorUtils;
-import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
 
 public class MainActivity extends AppCompatActivity
-        implements MoviesAdapter.MoviesAdapterOnItemClickHandler{
+        implements MoviesAdapter.MoviesAdapterOnItemClickHandler {
 
-    @BindView(R.id.recyclerview_movies) RecyclerView mRecyclerView;
-    @BindView(R.id.pb_loading_indicator) ProgressBar mLoadingIndicator;
-    @BindView(R.id.toolbar) Toolbar mToolbar;
+    @BindView(R.id.recyclerview_movies)
+    RecyclerView mRecyclerView;
+    @BindView(R.id.pb_loading_indicator)
+    ProgressBar mLoadingIndicator;
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
 
     private int mPosition = RecyclerView.NO_POSITION;
     private MainActivityViewModel mViewModel;
     private MoviesAdapter mMoviesAdapter;
-
-    private MoviesTypeProvider mType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +47,13 @@ public class MainActivity extends AppCompatActivity
 
         setSupportActionBar(mToolbar);
 
-        mType = Preferences.getMoviesType();
+        MainViewModelFactory factory =
+                InjectorUtils.provideMainActivityViewModelFactory(this.getApplicationContext());
+        mViewModel = ViewModelProviders.of(this, factory).get(MainActivityViewModel.class);
+        mViewModel.init();
+        subscribeDataStreams(mViewModel);
 
         initViews();
-        initViewModel();
     }
 
     private void initViews() {
@@ -82,26 +82,11 @@ public class MainActivity extends AppCompatActivity
                 : 0;
         int imageHeight = (int) ((this.getResources().getDisplayMetrics().heightPixels - actionBarHeight) / rowsCount);
 
-        return new MoviesAdapter(this, this, new ArrayList<>(), imageWidth, imageHeight);
-    }
-
-    private void initViewModel() {
-        MainViewModelFactory factory =
-                InjectorUtils.provideMainActivityViewModelFactory(this.getApplicationContext());
-        mViewModel = ViewModelProviders.of(this, factory).get(MainActivityViewModel.class);
-
-        subscribeDataStreams(mViewModel);
+        return new MoviesAdapter(this, new ArrayList<>(), imageWidth, imageHeight);
     }
 
     private void subscribeDataStreams(MainActivityViewModel viewModel) {
-        viewModel.getMovies(mType).observe(this, movies -> {
-            if (movies != null) {
-                showMoviesDataView();
-                showMoviesInUi(movies);
-            } else {
-                showLoading();
-            }
-        });
+        viewModel.getMovies().observe(this, this::showMoviesInUi);
     }
 
     private void showMoviesInUi(List<MovieEntry> movies) {
@@ -110,27 +95,28 @@ public class MainActivity extends AppCompatActivity
             mPosition = 0;
         }
         mRecyclerView.smoothScrollToPosition(mPosition);
+        if (movies != null && movies.size() != 0) {
+            showMoviesDataView();
+        } else {
+            showLoading();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        MoviesTypeProvider type = Preferences.getMoviesType();
-        if (mType != type) {
-            mType = type;
-            initViewModel();
-        }
+        mViewModel.onResume();
+        subscribeDataStreams(mViewModel);
     }
 
     /**
-     * This method is for responding to clicks from our list.
+     * Launch DetailActivity
      */
     @Override
-    public void onItemClick(int movieId) {
-        Intent movieDetailIntent = new Intent(this, DetailActivity.class);
-        movieDetailIntent.putExtra(DetailActivity.MOVIE_ID_EXTRA, movieId);
-        startActivity(movieDetailIntent);
+    public void onItemClick(MovieEntry movie, ImageView moviePoster) {
+        DetailActivity.start(this, movie, moviePoster);
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

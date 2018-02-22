@@ -5,23 +5,21 @@ import android.arch.lifecycle.ViewModelProvider;
 import android.support.annotation.NonNull;
 
 import lv.st.sbogdano.popularmovies.data.MoviesRepository;
+import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 
-/**
- * Created by sbogdano on 20/02/2018.
- */
 public class DetailViewModelFactory extends ViewModelProvider.NewInstanceFactory{
 
     private final MoviesRepository mRepository;
-    private final int mMovieId;
+    private final MovieEntry mMovie;
 
-    public DetailViewModelFactory(MoviesRepository repository, int movieId) {
+    public DetailViewModelFactory(MoviesRepository repository, MovieEntry movie) {
         mRepository = repository;
-        mMovieId = movieId;
+        mMovie = movie;
     }
 
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-        return (T) new DetailActivityViewModel(mRepository, mMovieId);
+        return (T) new DetailActivityViewModel(mRepository, mMovie);
     }
 }

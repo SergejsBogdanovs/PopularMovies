@@ -3,36 +3,22 @@ package lv.st.sbogdano.popularmovies.data.network;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
-import android.util.Log;
 
 import java.io.IOException;
-import java.util.List;
 
-import io.reactivex.FlowableSubscriber;
-import io.reactivex.SingleObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import lv.st.sbogdano.popularmovies.AppExecutors;
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.api.MovieService;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.model.content.Movie;
 import lv.st.sbogdano.popularmovies.data.model.response.MoviesResponse;
 import lv.st.sbogdano.popularmovies.utilities.MoviesParser;
-import lv.st.sbogdano.popularmovies.utilities.MoviesPreferences;
 import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Provides an API for doing all operations with the server data
