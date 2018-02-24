@@ -80,8 +80,9 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         loadMovieImageIntoAppBar();
-
         bindMovieToUi();
+
+        subscribeDataStreams();
 
     }
 
@@ -127,16 +128,8 @@ public class DetailActivity extends AppCompatActivity {
         mDetailBinding.rating.setText(formattedRating);
     }
 
-//    private void initViewModel() {
-//        DetailViewModelFactory factory =
-//                InjectorUtils.provideDetailViewModelFactory(this.getApplicationContext(), mMovie);
-//        mDetailViewModel = ViewModelProviders.of(this, factory).get(DetailActivityViewModel.class);
-//
-//        //subscribeDataStreams(mDetailViewModel);
-//    }
+    private void subscribeDataStreams() {
 
-    private void subscribeDataStreams(DetailActivityViewModel detailViewModel) {
-        //TODO: Implement in Part 2!
     }
 
     @Override

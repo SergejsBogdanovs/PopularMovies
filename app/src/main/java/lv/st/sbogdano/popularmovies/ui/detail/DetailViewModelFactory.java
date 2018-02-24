@@ -4,15 +4,15 @@ import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
 import android.support.annotation.NonNull;
 
-import lv.st.sbogdano.popularmovies.data.MoviesRepository;
+import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 
 public class DetailViewModelFactory extends ViewModelProvider.NewInstanceFactory{
 
-    private final MoviesRepository mRepository;
+    private final MoviesRepositoryImpl mRepository;
     private final MovieEntry mMovie;
 
-    public DetailViewModelFactory(MoviesRepository repository, MovieEntry movie) {
+    public DetailViewModelFactory(MoviesRepositoryImpl repository, MovieEntry movie) {
         mRepository = repository;
         mMovie = movie;
     }

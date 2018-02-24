@@ -2,6 +2,7 @@ package lv.st.sbogdano.popularmovies.ui.settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceFragment;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -17,8 +18,8 @@ public class Preferences {
 
     private static final String TYPE_KEY = "movies_type_key";
 
-    private static final String POPULAR_MOVIE_TYPE = "popular";
-    private static final String TOP_RATED_MOVIE_TYPE = "top_rated";
+    public static final String POPULAR_MOVIE_TYPE = "popular";
+    public static final String TOP_RATED_MOVIE_TYPE = "top_rated";
 
     @NonNull
     public static MoviesTypeProvider getMoviesType() {
@@ -40,5 +41,12 @@ public class Preferences {
         return AppDelegate.getAppContext()
                 .getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE);
     }
+
+    public static void setPrefs(String movieType) {
+        SharedPreferences prefs = getPrefs();
+        prefs.edit().putString(TYPE_KEY, movieType).apply();
+    }
+
+
 
 }

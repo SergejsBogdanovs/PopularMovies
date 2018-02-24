@@ -39,7 +39,7 @@ public class MovieEntry implements Parcelable {
         this.voteAverage = voteAverage;
     }
 
-    // Constructor used by Room to create MovieEntries
+    // Default constructor
     @Ignore
     public MovieEntry(int movieId,
                       String posterPath,

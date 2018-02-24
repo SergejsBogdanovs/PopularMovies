@@ -10,6 +10,10 @@
     <string name="title_activity_settings">Settings</string>
     <string name="settings_movies_type_key">movies_type_key</string>
 
+    <string name="menu_movie_type">Movie Type</string>
+    <string name="popular">Popular</string>
+    <string name="top_rated">Top Rated</string>
+
     <!-- DetailsActivity -->
     <string name="movie_title">%1$s \u2014 %2$s</string>
 

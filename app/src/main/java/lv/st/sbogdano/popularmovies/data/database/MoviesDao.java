@@ -21,13 +21,6 @@ public interface MoviesDao {
     @Query("SELECT * FROM movies")
     LiveData<List<MovieEntry>> getMovies();
 
-    /**
-     * Get the single movie by it id
-     * @param movieId the movie id
-     * @return {@LiveData}  the movie.
-     */
-    @Query("SELECT * FROM movies WHERE movieId = :movieId")
-    LiveData<MovieEntry> getMovieDetails(int movieId);
 
     /**
      * Inserts a list of {@link MovieEntry} into the movies table.

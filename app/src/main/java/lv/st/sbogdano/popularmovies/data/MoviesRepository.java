@@ -4,68 +4,20 @@ import android.arch.lifecycle.LiveData;
 
 import java.util.List;
 
-import lv.st.sbogdano.popularmovies.AppExecutors;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.database.MoviesDao;
-import lv.st.sbogdano.popularmovies.data.network.MoviesNetworkDataSource;
+import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
+import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
 import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
 
-/**
- * Handles data operations in PopularMovies. Acts as a mediator between {@link MoviesNetworkDataSource}
- * and {@link lv.st.sbogdano.popularmovies.data.database.MoviesDao}
- */
-public class MoviesRepository {
+public interface MoviesRepository {
 
-    // For Singleton instantiation
-    private static final Object LOCK = new Object();
-    private static MoviesRepository sInstance;
-    private final MoviesDao mMoviesDao;
-    private final MoviesNetworkDataSource mMoviesNetworkDataSource;
-    private final AppExecutors mExecutors;
+    LiveData<List<MovieEntry>> getMovies(MoviesTypeProvider type);
 
-    private MoviesRepository(
-            MoviesDao moviesDao,
-            MoviesNetworkDataSource moviesNetworkDataSource,
-            AppExecutors executors) {
+    LiveData<List<ReviewEntry>> getReviews(MovieEntry movie);
 
-        mMoviesDao = moviesDao;
-        mMoviesNetworkDataSource = moviesNetworkDataSource;
-        mExecutors = executors;
+    LiveData<List<VideoEntry>> getVideos(MovieEntry movie);
 
-        // As long as the repository exists, observe the network LiveData.
-        // If that LiveData changes, update the database.
-        LiveData<MovieEntry[]> networkData = mMoviesNetworkDataSource.getMovies();
-        networkData.observeForever(newMoviesFromNetwork -> mExecutors.diskIO().execute(() -> {
-            // delete old data
-            mMoviesDao.deleteOldMovies();
-            // Insert our new movies data into database
-            mMoviesDao.bulkInsert(newMoviesFromNetwork);
-        }));
-    }
+    LiveData<Boolean> addToFavorite(MovieEntry movie);
 
-    public synchronized static MoviesRepository getInstance(
-            MoviesDao moviesDao,
-            MoviesNetworkDataSource moviesNetworkDataSource,
-            AppExecutors executors) {
-
-        if (sInstance == null) {
-            synchronized (LOCK) {
-                sInstance = new MoviesRepository(moviesDao, moviesNetworkDataSource, executors);
-            }
-        }
-        return sInstance;
-    }
-
-    public LiveData<List<MovieEntry>> getMovies(MoviesTypeProvider type) {
-        initializeData(type);
-        return mMoviesDao.getMovies();
-    }
-
-//    public LiveData<MovieEntry> getMovieDetails(int movieId) {
-//        return mMoviesDao.getMovieDetails(movieId);
-//    }
-
-    public synchronized void initializeData(MoviesTypeProvider type) {
-        mMoviesNetworkDataSource.fetchMovies(type);
-    }
+    LiveData<Boolean> removeFromFavorite(MovieEntry movie);
 }

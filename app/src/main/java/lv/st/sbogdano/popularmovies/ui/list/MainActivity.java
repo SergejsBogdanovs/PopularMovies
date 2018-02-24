@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import butterknife.ButterKnife;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.ui.detail.DetailActivity;
-import lv.st.sbogdano.popularmovies.ui.settings.SettingsActivity;
+import lv.st.sbogdano.popularmovies.ui.settings.Preferences;
 import lv.st.sbogdano.popularmovies.utilities.InjectorUtils;
 
 public class MainActivity extends AppCompatActivity
@@ -128,11 +129,33 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
+            case R.id.menu_filter:
+                showTypePopUpMenu();
+                break;
         }
-        return super.onOptionsItemSelected(item);
+        return true;
+    }
+
+    private void showTypePopUpMenu() {
+        PopupMenu popup = new PopupMenu(this, findViewById(R.id.menu_filter));
+        popup.getMenuInflater().inflate(R.menu.movie_types, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(menuItem -> {
+            switch (menuItem.getItemId()) {
+                case R.id.popular:
+                    Preferences.setPrefs(getString(R.string.settings_movie_default_type));
+                    onResume();
+
+                    break;
+                case R.id.top_rated:
+                    Preferences.setPrefs(getString(R.string.settings_movie_top_rated));
+                    onResume();
+                    break;
+            }
+            return true;
+        });
+
+        popup.show();
     }
 
     /**

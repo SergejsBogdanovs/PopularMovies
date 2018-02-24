@@ -6,7 +6,7 @@ import android.arch.lifecycle.ViewModel;
 import java.util.List;
 
 import io.reactivex.annotations.Nullable;
-import lv.st.sbogdano.popularmovies.data.MoviesRepository;
+import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.ui.settings.Preferences;
 import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
@@ -18,11 +18,11 @@ public class MainActivityViewModel extends ViewModel {
 
     private MoviesTypeProvider mType;
 
-    private final MoviesRepository mRepository;
+    private final MoviesRepositoryImpl mRepository;
     private LiveData<List<MovieEntry>> mMovies;
 
 
-    public MainActivityViewModel(@Nullable MoviesRepository repository) {
+    public MainActivityViewModel(@Nullable MoviesRepositoryImpl repository) {
         mRepository = repository;
     }
 

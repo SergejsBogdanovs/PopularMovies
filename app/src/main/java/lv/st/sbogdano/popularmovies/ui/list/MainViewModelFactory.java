@@ -4,17 +4,17 @@ import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
 import android.support.annotation.NonNull;
 
-import lv.st.sbogdano.popularmovies.data.MoviesRepository;
+import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
 
 /**
  * Factory method that allows us to create a ViewModel with a constructor that takes a
- * {@link MoviesRepository}
+ * {@link MoviesRepositoryImpl}
  */
 public class MainViewModelFactory extends ViewModelProvider.NewInstanceFactory{
 
-    private final MoviesRepository mRepository;
+    private final MoviesRepositoryImpl mRepository;
 
-    public MainViewModelFactory(MoviesRepository repository) {
+    public MainViewModelFactory(MoviesRepositoryImpl repository) {
         this.mRepository = repository;
     }
 

@@ -11,7 +11,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         buildConfigField "String", "API_ENDPOINT", '"http://api.themoviedb.org/3/movie/"'
-        buildConfigField "String", "API_KEY", '"YOUR_API_KEY"'
+        buildConfigField "String", "API_KEY", '"ec37c7f4a198ea5f17aa1db00536041c"'
         buildConfigField "String", "IMAGES_BASE_URL", '"http://image.tmdb.org/t/p/"'
 
         vectorDrawables.useSupportLibrary = true

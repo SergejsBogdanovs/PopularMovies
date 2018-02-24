@@ -9,7 +9,7 @@ import android.content.Context;
  * {@link MoviesDatabase} database for the application including a table for {@link MovieEntry}
  * with the DAO {@link MoviesDao}.
  */
-@Database(entities = {MovieEntry.class}, version = 1)
+@Database(entities = {MovieEntry.class, ReviewEntry.class, VideoEntry.class}, version = 1)
 public abstract class MoviesDatabase extends RoomDatabase {
 
     private static final String DATABASE_NAME = "movies";
