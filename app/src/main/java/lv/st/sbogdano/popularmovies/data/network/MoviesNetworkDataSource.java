@@ -10,7 +10,10 @@ import lv.st.sbogdano.popularmovies.AppExecutors;
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.api.MovieService;
+import lv.st.sbogdano.popularmovies.data.api.ServiceGenerator;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
+import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
 import lv.st.sbogdano.popularmovies.data.model.response.MoviesResponse;
 import lv.st.sbogdano.popularmovies.utilities.MoviesParser;
 import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
@@ -18,6 +21,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
@@ -31,12 +35,17 @@ public class MoviesNetworkDataSource {
     private final Context mContext;
 
     private final MutableLiveData<MovieEntry[]> mDownloadedMovies;
+    private final MutableLiveData<ReviewEntry[]> mDownloadedReviews;
+    private final MutableLiveData<VideoEntry[]> mDownloadedVideos;
+
     private final AppExecutors mExecutors;
 
     private MoviesNetworkDataSource(Context context, AppExecutors executors) {
         mContext = context;
         mExecutors = executors;
         mDownloadedMovies = new MutableLiveData<>();
+        mDownloadedReviews = new MutableLiveData<>();
+        mDownloadedVideos = new MutableLiveData<>();
     }
 
     public static MoviesNetworkDataSource getInstance(Context context, AppExecutors executors) {
@@ -60,23 +69,11 @@ public class MoviesNetworkDataSource {
             moviesType = mContext.getString(R.string.settings_movie_top_rated);
         }
 
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-        httpClient.addInterceptor(logging);
+        MovieService client = ServiceGenerator.createService(MovieService.class);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BuildConfig.API_ENDPOINT)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(httpClient.build())
-                .build();
-
-        MovieService client = retrofit.create(MovieService.class);
-
-        Call<MoviesResponse> clientMovies = client.getMovies(moviesType, BuildConfig.API_KEY);
+        Call<MoviesResponse> clientMovies = client.getMovies(moviesType);
 
         mExecutors.networkIO().execute(() -> {
-
             try {
                 MoviesResponse response = clientMovies.execute().body();
                 MovieEntry[] movieEntries = MoviesParser.parse(response.getMovies());
@@ -85,5 +82,9 @@ public class MoviesNetworkDataSource {
                 e.printStackTrace();
             }
         });
+    }
+
+    public LiveData<ReviewEntry[]> getReviews() {
+        return null;
     }
 }

@@ -129,7 +129,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void subscribeDataStreams() {
-
+        mDetailViewModel.getReviews(mMovie);
     }
 
     @Override

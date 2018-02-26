@@ -145,8 +145,8 @@ public class MainActivity extends AppCompatActivity
                 case R.id.popular:
                     Preferences.setPrefs(getString(R.string.settings_movie_default_type));
                     onResume();
-
                     break;
+
                 case R.id.top_rated:
                     Preferences.setPrefs(getString(R.string.settings_movie_top_rated));
                     onResume();

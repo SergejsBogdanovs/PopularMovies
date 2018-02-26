@@ -35,13 +35,16 @@ public class MoviesRepositoryImpl implements MoviesRepository {
 
         // As long as the repository exists, observe the network LiveData.
         // If that LiveData changes, update the database.
-        LiveData<MovieEntry[]> networkData = mMoviesNetworkDataSource.getMovies();
-        networkData.observeForever(newMoviesFromNetwork -> mExecutors.diskIO().execute(() -> {
+        LiveData<MovieEntry[]> movieData = mMoviesNetworkDataSource.getMovies();
+        movieData.observeForever(newMoviesFromNetwork -> mExecutors.diskIO().execute(() -> {
             // delete old data
             mMoviesDao.deleteOldMovies();
             // Insert our new movies data into database
             mMoviesDao.bulkInsert(newMoviesFromNetwork);
         }));
+
+        LiveData<ReviewEntry[]> reviewData = mMoviesNetworkDataSource.getReviews();
+
     }
 
     public synchronized static MoviesRepositoryImpl getInstance(

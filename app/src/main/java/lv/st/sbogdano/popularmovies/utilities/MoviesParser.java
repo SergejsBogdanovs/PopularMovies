@@ -1,5 +1,6 @@
 package lv.st.sbogdano.popularmovies.utilities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
@@ -25,5 +26,7 @@ public class MoviesParser {
         }
 
         return movieEntries;
+
     }
+
 }
