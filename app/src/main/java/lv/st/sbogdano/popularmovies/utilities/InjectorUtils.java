@@ -3,6 +3,7 @@ package lv.st.sbogdano.popularmovies.utilities;
 import android.content.Context;
 
 import lv.st.sbogdano.popularmovies.AppExecutors;
+import lv.st.sbogdano.popularmovies.data.MoviesRepository;
 import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.database.MoviesDatabase;
@@ -15,7 +16,7 @@ import lv.st.sbogdano.popularmovies.ui.list.MainViewModelFactory;
  */
 public class InjectorUtils {
 
-    public static MoviesRepositoryImpl provideRepository(Context context) {
+    public static MoviesRepository provideRepository(Context context) {
         MoviesDatabase database = MoviesDatabase.getInstance(context.getApplicationContext());
         AppExecutors executors = AppExecutors.getInstance();
         MoviesNetworkDataSource networkDataSource
@@ -32,12 +33,12 @@ public class InjectorUtils {
 //    }
 
     public static DetailViewModelFactory provideDetailViewModelFactory(Context context, MovieEntry movie) {
-        MoviesRepositoryImpl repository = provideRepository(context.getApplicationContext());
+        MoviesRepository repository = provideRepository(context.getApplicationContext());
         return new DetailViewModelFactory(repository, movie);
     }
 
     public static MainViewModelFactory provideMainActivityViewModelFactory(Context context) {
-        MoviesRepositoryImpl repository = provideRepository(context.getApplicationContext());
+        MoviesRepository repository = provideRepository(context.getApplicationContext());
         return new MainViewModelFactory(repository);
     }
 }

@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
 import android.support.annotation.NonNull;
 
+import lv.st.sbogdano.popularmovies.data.MoviesRepository;
 import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
 
 /**
@@ -12,9 +13,9 @@ import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
  */
 public class MainViewModelFactory extends ViewModelProvider.NewInstanceFactory{
 
-    private final MoviesRepositoryImpl mRepository;
+    private final MoviesRepository mRepository;
 
-    public MainViewModelFactory(MoviesRepositoryImpl repository) {
+    public MainViewModelFactory(MoviesRepository repository) {
         this.mRepository = repository;
     }
 

@@ -13,11 +13,14 @@ public interface MoviesRepository {
 
     LiveData<List<MovieEntry>> getMovies(MoviesTypeProvider type);
 
-    LiveData<List<ReviewEntry>> getReviews(MovieEntry movie);
+    LiveData<List<ReviewEntry>> getReviews();
 
-    LiveData<List<VideoEntry>> getVideos(MovieEntry movie);
+    LiveData<List<VideoEntry>> getVideos();
 
     LiveData<Boolean> addToFavorite(MovieEntry movie);
 
     LiveData<Boolean> removeFromFavorite(MovieEntry movie);
+
+    void init(MovieEntry movie);
+
 }

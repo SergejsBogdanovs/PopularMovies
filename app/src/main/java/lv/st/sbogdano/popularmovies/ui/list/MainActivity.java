@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity
                 InjectorUtils.provideMainActivityViewModelFactory(this.getApplicationContext());
         mViewModel = ViewModelProviders.of(this, factory).get(MainActivityViewModel.class);
         mViewModel.init();
-        subscribeDataStreams(mViewModel);
+        subscribeDataStreams();
 
         initViews();
     }
@@ -86,8 +86,8 @@ public class MainActivity extends AppCompatActivity
         return new MoviesAdapter(this, new ArrayList<>(), imageWidth, imageHeight);
     }
 
-    private void subscribeDataStreams(MainActivityViewModel viewModel) {
-        viewModel.getMovies().observe(this, this::showMoviesInUi);
+    private void subscribeDataStreams() {
+        mViewModel.getMovies().observe(this, this::showMoviesInUi);
     }
 
     private void showMoviesInUi(List<MovieEntry> movies) {
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         mViewModel.onResume();
-        subscribeDataStreams(mViewModel);
+        subscribeDataStreams();
     }
 
     /**

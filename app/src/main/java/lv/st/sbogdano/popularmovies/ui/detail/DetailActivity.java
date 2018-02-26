@@ -20,9 +20,13 @@ import android.widget.ImageView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
+import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
 import lv.st.sbogdano.popularmovies.databinding.ActivityDetailBinding;
 import lv.st.sbogdano.popularmovies.utilities.Images;
 import lv.st.sbogdano.popularmovies.utilities.InjectorUtils;
@@ -64,13 +68,13 @@ public class DetailActivity extends AppCompatActivity {
         mMovie = getIntent().getParcelableExtra(MOVIE_EXTRA);
 
         mDetailBinding = DataBindingUtil.setContentView(this, R.layout.activity_detail);
+        mDetailBinding.setMovie(mMovie);
+        mDetailBinding.executePendingBindings();
 
         DetailViewModelFactory factory =
                 InjectorUtils.provideDetailViewModelFactory(this.getApplicationContext(), mMovie);
         mDetailViewModel = ViewModelProviders.of(this, factory).get(DetailActivityViewModel.class);
-
-        mDetailBinding.setMovie(mMovie);
-        mDetailBinding.executePendingBindings();
+        mDetailViewModel.init(mMovie);
 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -80,10 +84,10 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         loadMovieImageIntoAppBar();
+
         bindMovieToUi();
 
         subscribeDataStreams();
-
     }
 
     private void loadMovieImageIntoAppBar() {
@@ -108,6 +112,11 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    private void subscribeDataStreams() {
+        mDetailViewModel.getReviews().observe(this, this::bindReviewToUi);
+        mDetailViewModel.getVideos().observe(this, this::bindVideoToUi);
+    }
+
     private void bindMovieToUi() {
         /***********************
          * Movie Title and Year*
@@ -128,8 +137,24 @@ public class DetailActivity extends AppCompatActivity {
         mDetailBinding.rating.setText(formattedRating);
     }
 
-    private void subscribeDataStreams() {
-        mDetailViewModel.getReviews(mMovie);
+
+    private void bindReviewToUi(List<ReviewEntry> reviewEntries) {
+        if (!reviewEntries.isEmpty()) {
+            mDetailBinding.reviewTitle.setVisibility(View.VISIBLE);
+            mDetailBinding.reviewsRecyclerview.setVisibility(View.VISIBLE);
+
+            mDetailBinding.reviewTitle.setText(reviewEntries.get(0).getAuthor());
+        }
+    }
+
+    private void bindVideoToUi(List<VideoEntry> videoEntries) {
+        if (!videoEntries.isEmpty()) {
+            mDetailBinding.videoTitle.setVisibility(View.VISIBLE);
+            mDetailBinding.videosRecyclerview.setVisibility(View.VISIBLE);
+
+            mDetailBinding.videoTitle.setText(videoEntries.get(0).getName());
+
+        }
     }
 
     @Override

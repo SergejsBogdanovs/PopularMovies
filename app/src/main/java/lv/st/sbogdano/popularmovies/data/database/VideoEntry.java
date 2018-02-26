@@ -5,7 +5,7 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 
-@Entity(tableName = "trailers")
+@Entity(tableName = "videos")
 public class VideoEntry {
 
     @PrimaryKey(autoGenerate = true)

@@ -9,6 +9,7 @@ import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.database.MoviesDao;
 import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
 import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
+import lv.st.sbogdano.popularmovies.data.model.content.Video;
 import lv.st.sbogdano.popularmovies.data.network.MoviesNetworkDataSource;
 import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
 
@@ -40,11 +41,8 @@ public class MoviesRepositoryImpl implements MoviesRepository {
             // delete old data
             mMoviesDao.deleteOldMovies();
             // Insert our new movies data into database
-            mMoviesDao.bulkInsert(newMoviesFromNetwork);
+            mMoviesDao.insertAllMovies(newMoviesFromNetwork);
         }));
-
-        LiveData<ReviewEntry[]> reviewData = mMoviesNetworkDataSource.getReviews();
-
     }
 
     public synchronized static MoviesRepositoryImpl getInstance(
@@ -67,13 +65,13 @@ public class MoviesRepositoryImpl implements MoviesRepository {
     }
 
     @Override
-    public LiveData<List<ReviewEntry>> getReviews(MovieEntry movie) {
-        return null;
+    public LiveData<List<ReviewEntry>> getReviews() {
+        return mMoviesDao.getReviews();
     }
 
     @Override
-    public LiveData<List<VideoEntry>> getVideos(MovieEntry movie) {
-        return null;
+    public LiveData<List<VideoEntry>> getVideos() {
+        return mMoviesDao.getVideos();
     }
 
     @Override
@@ -86,7 +84,27 @@ public class MoviesRepositoryImpl implements MoviesRepository {
         return null;
     }
 
+    @Override
+    public void init(MovieEntry movie) {
+        LiveData<ReviewEntry[]> reviewData = mMoviesNetworkDataSource.getReviews(movie);
+        reviewData.observeForever(newReviewsFromNetwork -> mExecutors.diskIO().execute(() -> {
+            // delete old data
+            mMoviesDao.deleteOldReviews();
+            // Insert our new reviews data into database
+            mMoviesDao.insertAllReviews(newReviewsFromNetwork);
+        }));
+
+        LiveData<VideoEntry[]> videoData = mMoviesNetworkDataSource.getVideos(movie);
+        videoData.observeForever(newVideoFromNetwork -> mExecutors.diskIO().execute(() -> {
+            // delete old data
+            mMoviesDao.deleteOldVideos();
+            // Insert our new movies data into database
+            mMoviesDao.insertAllVideos(newVideoFromNetwork);
+        }));
+    }
+
     public synchronized void initializeData(MoviesTypeProvider type) {
         mMoviesNetworkDataSource.fetchMovies(type);
     }
+
 }

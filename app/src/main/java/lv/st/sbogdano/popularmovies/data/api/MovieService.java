@@ -17,10 +17,10 @@ public interface MovieService {
     Call<MoviesResponse> getMovies(@Path("moviesType") String type);
 
     @GET("{id}/reviews")
-    Call<ReviewsResponse> getReviews(@Path("id") @NonNull String id);
+    Call<ReviewsResponse> getReviews(@Path("id") @NonNull int id);
 
     @GET("{id}/videos")
-    Call<VideosResponse> getVideo(@Path("id") @NonNull String id);
+    Call<VideosResponse> getVideos(@Path("id") @NonNull int id);
 
 
 }

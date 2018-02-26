@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModel;
 
 import java.util.List;
 
+import lv.st.sbogdano.popularmovies.data.MoviesRepository;
 import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
@@ -17,21 +18,24 @@ import lv.st.sbogdano.popularmovies.data.model.content.Review;
 public class DetailActivityViewModel extends ViewModel {
 
     private MovieEntry mMovie;
-    private final MoviesRepositoryImpl mRepository;
+    private final MoviesRepository mRepository;
 
 
-    public DetailActivityViewModel(MoviesRepositoryImpl repository, MovieEntry movie) {
+    public DetailActivityViewModel(MoviesRepository repository, MovieEntry movie) {
         mRepository = repository;
         mMovie = movie;
     }
 
-    public LiveData<List<ReviewEntry>> getReviews(MovieEntry movie) {
-       return mRepository.getReviews(movie);
+    public LiveData<List<ReviewEntry>> getReviews() {
+       return mRepository.getReviews();
     }
 
-    public LiveData<List<VideoEntry>> getVideos(MovieEntry movie) {
-       return mRepository.getVideos(movie);
+    public LiveData<List<VideoEntry>> getVideos() {
+       return mRepository.getVideos();
     }
 
+    public void init(MovieEntry movie) {
+        mRepository.init(movie);
+    }
 
 }
