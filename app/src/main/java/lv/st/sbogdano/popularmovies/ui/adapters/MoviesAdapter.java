@@ -1,4 +1,4 @@
-package lv.st.sbogdano.popularmovies.ui.list;
+package lv.st.sbogdano.popularmovies.ui.adapters;
 
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;

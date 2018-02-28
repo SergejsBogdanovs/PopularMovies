@@ -1,7 +1,6 @@
 package lv.st.sbogdano.popularmovies.ui.list;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -22,6 +21,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.ui.adapters.MoviesAdapter;
 import lv.st.sbogdano.popularmovies.ui.detail.DetailActivity;
 import lv.st.sbogdano.popularmovies.ui.settings.Preferences;
 import lv.st.sbogdano.popularmovies.utilities.InjectorUtils;
@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity
                 InjectorUtils.provideMainActivityViewModelFactory(this.getApplicationContext());
         mViewModel = ViewModelProviders.of(this, factory).get(MainActivityViewModel.class);
         mViewModel.init();
+
         subscribeDataStreams();
 
         initViews();

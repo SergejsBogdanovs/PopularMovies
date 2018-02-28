@@ -11,8 +11,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.transition.Slide;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,14 +23,19 @@ import android.widget.ImageView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
 import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
 import lv.st.sbogdano.popularmovies.databinding.ActivityDetailBinding;
+import lv.st.sbogdano.popularmovies.ui.adapters.ReviewsAdapter;
+import lv.st.sbogdano.popularmovies.ui.adapters.VideosAdapter;
 import lv.st.sbogdano.popularmovies.utilities.Images;
 import lv.st.sbogdano.popularmovies.utilities.InjectorUtils;
 
@@ -38,9 +46,18 @@ public class DetailActivity extends AppCompatActivity {
 
     public static final String IMAGE = "poster";
     public static final String MOVIE_EXTRA = "MOVIE_ID_EXTRA";
+    private static final String TAG = DetailActivity.class.getSimpleName();
+
+//    @BindView(R.id.reviews_recyclerview)
+//    RecyclerView mReviewsRecyclerview;
+//    @BindView(R.id.videos_recyclerview)
+//    RecyclerView mVideosRecyclerview;
+
+    private ReviewsAdapter mReviewsAdapter;
 
     private DetailActivityViewModel mDetailViewModel;
     private ActivityDetailBinding mDetailBinding;
+
 
     private MovieEntry mMovie;
 
@@ -63,6 +80,7 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         prepareTransition();
         setContentView(R.layout.activity_detail);
+        ButterKnife.bind(this);
         supportPostponeEnterTransition();
 
         mMovie = getIntent().getParcelableExtra(MOVIE_EXTRA);
@@ -82,6 +100,14 @@ public class DetailActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        mDetailBinding.reviewsRecyclerview.setLayoutManager(new LinearLayoutManager(this));
+        mDetailBinding.reviewsRecyclerview.setHasFixedSize(true);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mDetailBinding.videosRecyclerview.setLayoutManager(linearLayoutManager);
+        mDetailBinding.videosRecyclerview.setHasFixedSize(true);
 
         loadMovieImageIntoAppBar();
 
@@ -142,8 +168,10 @@ public class DetailActivity extends AppCompatActivity {
         if (!reviewEntries.isEmpty()) {
             mDetailBinding.reviewTitle.setVisibility(View.VISIBLE);
             mDetailBinding.reviewsRecyclerview.setVisibility(View.VISIBLE);
-
-            mDetailBinding.reviewTitle.setText(reviewEntries.get(0).getAuthor());
+            mDetailBinding.reviewsRecyclerview.setAdapter(new ReviewsAdapter(reviewEntries));
+        } else {
+            mDetailBinding.reviewTitle.setVisibility(View.GONE);
+            mDetailBinding.reviewsRecyclerview.setVisibility(View.GONE);
         }
     }
 
@@ -151,9 +179,10 @@ public class DetailActivity extends AppCompatActivity {
         if (!videoEntries.isEmpty()) {
             mDetailBinding.videoTitle.setVisibility(View.VISIBLE);
             mDetailBinding.videosRecyclerview.setVisibility(View.VISIBLE);
-
-            mDetailBinding.videoTitle.setText(videoEntries.get(0).getName());
-
+            mDetailBinding.videosRecyclerview.setAdapter(new VideosAdapter(this, videoEntries));
+        } else {
+            mDetailBinding.videoTitle.setVisibility(View.GONE);
+            mDetailBinding.videosRecyclerview.setVisibility(View.GONE);
         }
     }
 
@@ -161,6 +190,7 @@ public class DetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                subscribeDataStreams();
                 onBackPressed();
                 return true;
         }
