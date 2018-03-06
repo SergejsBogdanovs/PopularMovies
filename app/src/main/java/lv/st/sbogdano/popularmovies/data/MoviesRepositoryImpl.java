@@ -1,21 +1,31 @@
 package lv.st.sbogdano.popularmovies.data;
 
 import android.arch.lifecycle.LiveData;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.List;
 
+import io.reactivex.Maybe;
 import lv.st.sbogdano.popularmovies.AppExecutors;
+import lv.st.sbogdano.popularmovies.data.api.ApiResponse;
+import lv.st.sbogdano.popularmovies.data.api.MovieService;
+import lv.st.sbogdano.popularmovies.data.api.ServiceGenerator;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.database.MoviesDao;
+import lv.st.sbogdano.popularmovies.data.database.dao.MoviesDao;
 import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
 import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
-import lv.st.sbogdano.popularmovies.data.model.content.Video;
+import lv.st.sbogdano.popularmovies.data.database.dao.ReviewDao;
+import lv.st.sbogdano.popularmovies.data.database.dao.VideoDao;
+import lv.st.sbogdano.popularmovies.data.model.Resource;
+import lv.st.sbogdano.popularmovies.data.model.response.MoviesResponse;
 import lv.st.sbogdano.popularmovies.data.network.MoviesNetworkDataSource;
-import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
+import lv.st.sbogdano.popularmovies.utilities.MoviesTransformer;
+import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 
 /**
  * Handles data operations in PopularMovies. Acts as a mediator between {@link MoviesNetworkDataSource}
- * and {@link lv.st.sbogdano.popularmovies.data.database.MoviesDao}
+ * and {@link MoviesDao}
  */
 public class MoviesRepositoryImpl implements MoviesRepository {
 
@@ -23,88 +33,118 @@ public class MoviesRepositoryImpl implements MoviesRepository {
     private static final Object LOCK = new Object();
     private static MoviesRepositoryImpl sInstance;
     private final MoviesDao mMoviesDao;
+    private final ReviewDao mReviewDao;
+    private final VideoDao mVideoDao;
     private final MoviesNetworkDataSource mMoviesNetworkDataSource;
     private final AppExecutors mExecutors;
+    private MovieService mMovieService = ServiceGenerator.createService(MovieService.class);
 
     private MoviesRepositoryImpl(MoviesDao moviesDao,
+                                 ReviewDao reviewDao,
+                                 VideoDao videoDao,
                                  MoviesNetworkDataSource moviesNetworkDataSource,
                                  AppExecutors executors) {
-
         mMoviesDao = moviesDao;
+        mReviewDao = reviewDao;
+        mVideoDao = videoDao;
         mMoviesNetworkDataSource = moviesNetworkDataSource;
         mExecutors = executors;
-
-        // As long as the repository exists, observe the network LiveData.
-        // If that LiveData changes, update the database.
-        LiveData<MovieEntry[]> movieData = mMoviesNetworkDataSource.getMovies();
-        movieData.observeForever(newMoviesFromNetwork -> mExecutors.diskIO().execute(() -> {
-            // delete old data
-            mMoviesDao.deleteOldMovies();
-            // Insert our new movies data into database
-            mMoviesDao.insertAllMovies(newMoviesFromNetwork);
-        }));
     }
 
     public synchronized static MoviesRepositoryImpl getInstance(
             MoviesDao moviesDao,
+            ReviewDao reviewDao,
+            VideoDao videoDao,
             MoviesNetworkDataSource moviesNetworkDataSource,
             AppExecutors executors) {
 
         if (sInstance == null) {
             synchronized (LOCK) {
-                sInstance = new MoviesRepositoryImpl(moviesDao, moviesNetworkDataSource, executors);
+                sInstance = new MoviesRepositoryImpl(
+                        moviesDao,
+                        reviewDao,
+                        videoDao,
+                        moviesNetworkDataSource,
+                        executors);
             }
         }
         return sInstance;
     }
 
     @Override
-    public LiveData<List<MovieEntry>> getMovies(MoviesTypeProvider type) {
-        initializeData(type);
-        return mMoviesDao.getMovies();
+    public LiveData<Resource<List<MovieEntry>>> loadMovies(MoviesType type) {
+
+        return new NetworkBoundResource<List<MovieEntry>, MoviesResponse>(mExecutors) {
+            @Override
+            protected void saveCallResult(@NonNull MoviesResponse item) {
+                List<MovieEntry> movieEntries = MoviesTransformer.transformMovies(item.getMovies(), type);
+                mMoviesDao.insertAllMovies(movieEntries);
+            }
+
+            @Override
+            protected boolean shouldFetch(@Nullable List<MovieEntry> data) {
+                return data == null || data.isEmpty();
+            }
+
+            @NonNull
+            @Override
+            protected LiveData<List<MovieEntry>> loadFromDb() {
+                return mMoviesDao.getMovies(type.name());
+            }
+
+            @NonNull
+            @Override
+            protected LiveData<ApiResponse<MoviesResponse>> createCall() {
+                return mMovieService.getMovies(type.name().toLowerCase());
+            }
+        }.asLiveData();
     }
 
     @Override
     public LiveData<List<ReviewEntry>> getReviews() {
-        return mMoviesDao.getReviews();
+        return mReviewDao.getReviews();
     }
 
     @Override
     public LiveData<List<VideoEntry>> getVideos() {
-        return mMoviesDao.getVideos();
+        return mVideoDao.getVideos();
     }
 
     @Override
-    public LiveData<Boolean> addToFavorite(MovieEntry movie) {
-        return null;
+    public void addToFavorite(MovieEntry movie) {
+        mExecutors.diskIO().execute(() -> {
+            MovieEntry favoriteMovie = new MovieEntry(movie);
+            mMoviesDao.insertFavorite(favoriteMovie);
+        });
     }
 
     @Override
-    public LiveData<Boolean> removeFromFavorite(MovieEntry movie) {
-        return null;
+    public void removeFromFavorite(MovieEntry movie) {
+        mExecutors.diskIO().execute(() ->
+                mMoviesDao.deleteMovieFromFavorite(movie.getMovieId(), MoviesType.FAVORITE.name()));
     }
 
     @Override
-    public void init(MovieEntry movie) {
+    public void loadMovieDetails(MovieEntry movie) {
         LiveData<ReviewEntry[]> reviewData = mMoviesNetworkDataSource.getReviews(movie);
         reviewData.observeForever(newReviewsFromNetwork -> mExecutors.diskIO().execute(() -> {
             // delete old data
-            mMoviesDao.deleteOldReviews();
+            mReviewDao.deleteOldReviews();
             // Insert our new reviews data into database
-            mMoviesDao.insertAllReviews(newReviewsFromNetwork);
+            mReviewDao.insertAllReviews(newReviewsFromNetwork);
         }));
 
         LiveData<VideoEntry[]> videoData = mMoviesNetworkDataSource.getVideos(movie);
         videoData.observeForever(newVideoFromNetwork -> mExecutors.diskIO().execute(() -> {
             // delete old data
-            mMoviesDao.deleteOldVideos();
+            mVideoDao.deleteOldVideos();
             // Insert our new movies data into database
-            mMoviesDao.insertAllVideos(newVideoFromNetwork);
+            mVideoDao.insertAllVideos(newVideoFromNetwork);
         }));
     }
 
-    public synchronized void initializeData(MoviesTypeProvider type) {
-        mMoviesNetworkDataSource.fetchMovies(type);
+    @Override
+    public Maybe<MovieEntry> getFavoriteMovie(int movieId) {
+        return mMoviesDao.getFavoriteMovie(movieId, MoviesType.FAVORITE.name());
     }
-
 }

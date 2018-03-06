@@ -4,6 +4,7 @@ package lv.st.sbogdano.popularmovies.data.model.content;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+
 public class Movie {
 
     @SerializedName("id")

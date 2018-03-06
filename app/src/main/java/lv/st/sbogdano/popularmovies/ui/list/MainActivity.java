@@ -1,11 +1,14 @@
 package lv.st.sbogdano.popularmovies.ui.list;
 
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +16,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +25,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.model.Resource;
+import lv.st.sbogdano.popularmovies.data.model.content.Movie;
+import lv.st.sbogdano.popularmovies.databinding.ActivityMainBinding;
 import lv.st.sbogdano.popularmovies.ui.adapters.MoviesAdapter;
 import lv.st.sbogdano.popularmovies.ui.detail.DetailActivity;
 import lv.st.sbogdano.popularmovies.ui.settings.Preferences;
@@ -29,24 +36,22 @@ import lv.st.sbogdano.popularmovies.utilities.InjectorUtils;
 public class MainActivity extends AppCompatActivity
         implements MoviesAdapter.MoviesAdapterOnItemClickHandler {
 
-    @BindView(R.id.recyclerview_movies)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.pb_loading_indicator)
-    ProgressBar mLoadingIndicator;
-    @BindView(R.id.toolbar)
-    Toolbar mToolbar;
-
+    private static final String TAG = MainActivity.class.getSimpleName();
     private int mPosition = RecyclerView.NO_POSITION;
     private MainActivityViewModel mViewModel;
     private MoviesAdapter mMoviesAdapter;
+
+    private ActivityMainBinding mMainBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+        mMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        mMainBinding.executePendingBindings();
 
-        setSupportActionBar(mToolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         MainViewModelFactory factory =
                 InjectorUtils.provideMainActivityViewModelFactory(this.getApplicationContext());
@@ -63,12 +68,12 @@ public class MainActivity extends AppCompatActivity
         int columns = this.getResources().getInteger(R.integer.columns_count);
 
         // Set up movies view
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
+        mMainBinding.recyclerviewMovies.setHasFixedSize(true);
+        mMainBinding.recyclerviewMovies.setLayoutManager(new GridLayoutManager(this, columns));
 
         mMoviesAdapter = getMoviesAdapter();
 
-        mRecyclerView.setAdapter(mMoviesAdapter);
+        mMainBinding.recyclerviewMovies.setAdapter(mMoviesAdapter);
     }
 
     private MoviesAdapter getMoviesAdapter() {
@@ -88,7 +93,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void subscribeDataStreams() {
-        mViewModel.getMovies().observe(this, this::showMoviesInUi);
+        mViewModel.getMovies().observe(this, resources -> {
+            switch (resources.status) {
+                case SUCCESS: {
+                    showMoviesInUi(resources.data);
+                    break;
+                }
+                case LOADING: {
+                    showLoading();
+                }
+            }
+        });
     }
 
     private void showMoviesInUi(List<MovieEntry> movies) {
@@ -96,19 +111,12 @@ public class MainActivity extends AppCompatActivity
         if (mPosition == RecyclerView.NO_POSITION) {
             mPosition = 0;
         }
-        mRecyclerView.smoothScrollToPosition(mPosition);
+        mMainBinding.recyclerviewMovies.smoothScrollToPosition(mPosition);
         if (movies != null && movies.size() != 0) {
             showMoviesDataView();
         } else {
             showLoading();
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mViewModel.onResume();
-        subscribeDataStreams();
     }
 
     /**
@@ -144,13 +152,18 @@ public class MainActivity extends AppCompatActivity
         popup.setOnMenuItemClickListener(menuItem -> {
             switch (menuItem.getItemId()) {
                 case R.id.popular:
-                    Preferences.setPrefs(getString(R.string.settings_movie_default_type));
-                    onResume();
+                    Preferences.setPrefs(getString(R.string.movie_default_type));
+                    restartViewModel();
                     break;
 
                 case R.id.top_rated:
-                    Preferences.setPrefs(getString(R.string.settings_movie_top_rated));
-                    onResume();
+                    Preferences.setPrefs(getString(R.string.movie_top_rated));
+                    restartViewModel();
+                    break;
+
+                case R.id.favorite:
+                    Preferences.setPrefs(getString(R.string.movie_favorite));
+                    restartViewModel();
                     break;
             }
             return true;
@@ -159,15 +172,21 @@ public class MainActivity extends AppCompatActivity
         popup.show();
     }
 
+    private void restartViewModel() {
+        mViewModel.onResume();
+        subscribeDataStreams();
+    }
+
+
     /**
      * This method will make the View for the movie data visible and hide the error message and
      * loading indicator.
      */
     private void showMoviesDataView() {
         // First, hide the loading indicator
-        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        mMainBinding.pbLoadingIndicator.setVisibility(View.INVISIBLE);
         // Finally, make sure the movies data is visible
-        mRecyclerView.setVisibility(View.VISIBLE);
+        mMainBinding.recyclerviewMovies.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -176,8 +195,8 @@ public class MainActivity extends AppCompatActivity
      */
     private void showLoading() {
         // Then, hide the movie data
-        mRecyclerView.setVisibility(View.INVISIBLE);
+        mMainBinding.recyclerviewMovies.setVisibility(View.INVISIBLE);
         // Finally, show the loading indicator
-        mLoadingIndicator.setVisibility(View.VISIBLE);
+        mMainBinding.pbLoadingIndicator.setVisibility(View.VISIBLE);
     }
 }

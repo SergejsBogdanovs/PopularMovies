@@ -5,19 +5,19 @@ import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import lv.st.sbogdano.popularmovies.AppExecutors;
-import lv.st.sbogdano.popularmovies.R;
+import lv.st.sbogdano.popularmovies.data.api.ApiResponse;
 import lv.st.sbogdano.popularmovies.data.api.MovieService;
 import lv.st.sbogdano.popularmovies.data.api.ServiceGenerator;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
 import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
-import lv.st.sbogdano.popularmovies.data.model.response.MoviesResponse;
 import lv.st.sbogdano.popularmovies.data.model.response.ReviewsResponse;
 import lv.st.sbogdano.popularmovies.data.model.response.VideosResponse;
 import lv.st.sbogdano.popularmovies.utilities.MoviesTransformer;
-import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
 import retrofit2.Call;
 
 /**
@@ -30,7 +30,7 @@ public class MoviesNetworkDataSource {
     private static MoviesNetworkDataSource sInstance;
     private final Context mContext;
 
-    private final MutableLiveData<MovieEntry[]> mDownloadedMovies;
+    private final MutableLiveData<ApiResponse<List<MovieEntry>>> mDownloadedMovies;
     private final MutableLiveData<ReviewEntry[]> mDownloadedReviews;
     private final MutableLiveData<VideoEntry[]> mDownloadedVideos;
 
@@ -53,32 +53,26 @@ public class MoviesNetworkDataSource {
         return sInstance;
     }
 
-    public LiveData<MovieEntry[]> getMovies() {
+    public LiveData<ApiResponse<List<MovieEntry>>> getMovies() {
         return mDownloadedMovies;
     }
 
-    public void fetchMovies(MoviesTypeProvider type) {
-
-        String moviesType = mContext.getString(R.string.settings_movie_default_type);
-
-        if (type == MoviesTypeProvider.TOP_RATED) {
-            moviesType = mContext.getString(R.string.settings_movie_top_rated);
-        }
-
-        MovieService client = ServiceGenerator.createService(MovieService.class);
-
-        Call<MoviesResponse> clientMovies = client.getMovies(moviesType);
-
-        mExecutors.networkIO().execute(() -> {
-            try {
-                MoviesResponse response = clientMovies.execute().body();
-                MovieEntry[] movieEntries = MoviesTransformer.transformMovies(response.getMovies());
-                mDownloadedMovies.postValue(movieEntries);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
+//    public void fetchMovies(MoviesType type) {
+//
+//        MovieService client = ServiceGenerator.createService(MovieService.class);
+//
+//        Call<MoviesResponse> clientMovies = client.getMovies(type.name().toLowerCase());
+//
+//        mExecutors.networkIO().execute(() -> {
+//            try {
+//                MoviesResponse response = clientMovies.execute().body();
+//                ApiResponse<List<MovieEntry>> movieEntries = MoviesTransformer.transformMovies(response.getMovies(), type);
+//                mDownloadedMovies.postValue(movieEntries);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//    }
 
     public LiveData<ReviewEntry[]> getReviews(MovieEntry movieEntry) {
         MovieService client = ServiceGenerator.createService(MovieService.class);
@@ -86,7 +80,8 @@ public class MoviesNetworkDataSource {
         mExecutors.networkIO().execute(() -> {
             try {
                 ReviewsResponse response = clientReviews.execute().body();
-                ReviewEntry[] reviewEntries = MoviesTransformer.transformReviews(response.getReviews());
+                ReviewEntry[] reviewEntries = MoviesTransformer.transformReviews(
+                        response != null ? response.getReviews() : new ArrayList<>());
                 mDownloadedReviews.postValue(reviewEntries);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -101,7 +96,8 @@ public class MoviesNetworkDataSource {
         mExecutors.networkIO().execute(() -> {
             try {
                 VideosResponse response = clientVideos.execute().body();
-                VideoEntry[] videoEntries = MoviesTransformer.transformVideos(response.getVideos());
+                VideoEntry[] videoEntries = MoviesTransformer.transformVideos(
+                        response != null ? response.getVideos() : new ArrayList<>());
                 mDownloadedVideos.postValue(videoEntries);
             } catch (IOException e) {
                 e.printStackTrace();

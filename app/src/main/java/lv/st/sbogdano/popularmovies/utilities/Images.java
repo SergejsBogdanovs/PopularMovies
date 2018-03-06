@@ -13,6 +13,7 @@ import lv.st.sbogdano.popularmovies.AppDelegate;
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.model.content.Movie;
 
 import static lv.st.sbogdano.popularmovies.ui.detail.DetailActivity.IMAGE;
 

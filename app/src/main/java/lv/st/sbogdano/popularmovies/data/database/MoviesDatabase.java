@@ -5,6 +5,11 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 
+import lv.st.sbogdano.popularmovies.data.database.dao.MoviesDao;
+import lv.st.sbogdano.popularmovies.data.database.dao.ReviewDao;
+import lv.st.sbogdano.popularmovies.data.database.dao.VideoDao;
+import lv.st.sbogdano.popularmovies.data.model.content.Movie;
+
 /**
  * {@link MoviesDatabase} database for the application including a table for {@link MovieEntry}
  * with the DAO {@link MoviesDao}.
@@ -31,4 +36,8 @@ public abstract class MoviesDatabase extends RoomDatabase {
     }
 
     public abstract MoviesDao moviesDao();
+
+    public abstract ReviewDao reviewDao();
+
+    public abstract VideoDao videoDao();
 }

@@ -2,12 +2,11 @@ package lv.st.sbogdano.popularmovies.ui.settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceFragment;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import lv.st.sbogdano.popularmovies.AppDelegate;
-import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
+import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 
 /**
  * Created by sbogdano.
@@ -20,20 +19,23 @@ public class Preferences {
 
     public static final String POPULAR_MOVIE_TYPE = "popular";
     public static final String TOP_RATED_MOVIE_TYPE = "top_rated";
+    public static final String FAVORITE_MOVIE_TYPE = "favorite";
 
     @NonNull
-    public static MoviesTypeProvider getMoviesType() {
+    public static MoviesType getMoviesType() {
         SharedPreferences prefs = getPrefs();
         if (!prefs.contains(TYPE_KEY)) {
             prefs.edit().putString(TYPE_KEY, POPULAR_MOVIE_TYPE).apply();
-            return MoviesTypeProvider.POPULAR;
+            return MoviesType.POPULAR;
         }
 
         String type = prefs.getString(TYPE_KEY, "");
         if (TextUtils.equals(type, TOP_RATED_MOVIE_TYPE)) {
-            return MoviesTypeProvider.TOP_RATED;
+            return MoviesType.TOP_RATED;
+        } else if (TextUtils.equals(type, FAVORITE_MOVIE_TYPE)) {
+            return MoviesType.FAVORITE;
         }
-        return MoviesTypeProvider.POPULAR;
+        return MoviesType.POPULAR;
     }
 
     @NonNull

@@ -13,10 +13,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.model.content.Movie;
 import lv.st.sbogdano.popularmovies.utilities.Images;
 
 /**
- * Exposes a list of movies forecasts from a list of {@link MovieEntry} to a {@link
+ * Exposes a list of movies forecasts from a list of {@link Movie} to a {@link
  * RecyclerView}.
  */
 public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder> {

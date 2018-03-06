@@ -7,20 +7,19 @@ import java.util.List;
 
 import io.reactivex.annotations.Nullable;
 import lv.st.sbogdano.popularmovies.data.MoviesRepository;
-import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.model.Resource;
 import lv.st.sbogdano.popularmovies.ui.settings.Preferences;
-import lv.st.sbogdano.popularmovies.utilities.MoviesTypeProvider;
+import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 
 /**
  * {@link ViewModel} for {@link MainActivity}
  */
 public class MainActivityViewModel extends ViewModel {
 
-    private MoviesTypeProvider mType;
-
+    private MoviesType mType;
     private final MoviesRepository mRepository;
-    private LiveData<List<MovieEntry>> mMovies;
+    private LiveData<Resource<List<MovieEntry>>> mMovies;
 
 
     public MainActivityViewModel(@Nullable MoviesRepository repository) {
@@ -29,22 +28,22 @@ public class MainActivityViewModel extends ViewModel {
 
     public void init() {
         mType = Preferences.getMoviesType();
-        loadMovies();
+        load();
     }
 
-    private void loadMovies() {
-        mMovies = mRepository.getMovies(mType);
+    private void load() {
+        mMovies = mRepository.loadMovies(mType);
     }
 
-    public LiveData<List<MovieEntry>> getMovies() {
+    public LiveData<Resource<List<MovieEntry>>> getMovies() {
         return mMovies;
     }
 
     public void onResume() {
-        MoviesTypeProvider type = Preferences.getMoviesType();
-        if (mType != type) {
+        MoviesType type = Preferences.getMoviesType();
+        if (mType != type || mType == MoviesType.FAVORITE) {
             mType = type;
-            loadMovies();
+            load();
         }
     }
 }

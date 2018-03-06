@@ -11,16 +11,14 @@ import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 public class DetailViewModelFactory extends ViewModelProvider.NewInstanceFactory{
 
     private final MoviesRepository mRepository;
-    private final MovieEntry mMovie;
 
-    public DetailViewModelFactory(MoviesRepository repository, MovieEntry movie) {
+    public DetailViewModelFactory(MoviesRepository repository) {
         mRepository = repository;
-        mMovie = movie;
     }
 
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-        return (T) new DetailActivityViewModel(mRepository, mMovie);
+        return (T) new DetailActivityViewModel(mRepository);
     }
 }

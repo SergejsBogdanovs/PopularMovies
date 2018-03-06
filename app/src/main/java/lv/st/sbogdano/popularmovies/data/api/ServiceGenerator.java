@@ -1,6 +1,7 @@
 package lv.st.sbogdano.popularmovies.data.api;
 
 import lv.st.sbogdano.popularmovies.BuildConfig;
+import lv.st.sbogdano.popularmovies.utilities.LiveDataCallAdapterFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -10,7 +11,8 @@ public class ServiceGenerator {
 
     private static Retrofit.Builder builder = new Retrofit.Builder()
             .baseUrl(BuildConfig.API_ENDPOINT)
-            .addConverterFactory(GsonConverterFactory.create());
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(new LiveDataCallAdapterFactory());
 
     private static Retrofit retrofit = builder.build();
 

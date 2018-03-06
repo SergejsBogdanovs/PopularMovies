@@ -1,5 +1,6 @@
 package lv.st.sbogdano.popularmovies.data.api;
 
+import android.arch.lifecycle.LiveData;
 import android.support.annotation.NonNull;
 
 import io.reactivex.Single;
@@ -14,7 +15,7 @@ import retrofit2.http.Query;
 public interface MovieService {
 
     @GET("{moviesType}/")
-    Call<MoviesResponse> getMovies(@Path("moviesType") String type);
+    LiveData<ApiResponse<MoviesResponse>> getMovies(@Path("moviesType") String type);
 
     @GET("{id}/reviews")
     Call<ReviewsResponse> getReviews(@Path("id") @NonNull int id);

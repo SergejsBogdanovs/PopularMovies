@@ -1,9 +1,11 @@
 package lv.st.sbogdano.popularmovies.ui.detail;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
+import android.graphics.Movie;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,27 +14,35 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.transition.Slide;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Maybe;
+import io.reactivex.MaybeObserver;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
 import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
+import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 import lv.st.sbogdano.popularmovies.databinding.ActivityDetailBinding;
 import lv.st.sbogdano.popularmovies.ui.adapters.ReviewsAdapter;
 import lv.st.sbogdano.popularmovies.ui.adapters.VideosAdapter;
@@ -46,18 +56,9 @@ public class DetailActivity extends AppCompatActivity {
 
     public static final String IMAGE = "poster";
     public static final String MOVIE_EXTRA = "MOVIE_ID_EXTRA";
-    private static final String TAG = DetailActivity.class.getSimpleName();
-
-//    @BindView(R.id.reviews_recyclerview)
-//    RecyclerView mReviewsRecyclerview;
-//    @BindView(R.id.videos_recyclerview)
-//    RecyclerView mVideosRecyclerview;
-
-    private ReviewsAdapter mReviewsAdapter;
 
     private DetailActivityViewModel mDetailViewModel;
     private ActivityDetailBinding mDetailBinding;
-
 
     private MovieEntry mMovie;
 
@@ -80,7 +81,6 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         prepareTransition();
         setContentView(R.layout.activity_detail);
-        ButterKnife.bind(this);
         supportPostponeEnterTransition();
 
         mMovie = getIntent().getParcelableExtra(MOVIE_EXTRA);
@@ -89,25 +89,57 @@ public class DetailActivity extends AppCompatActivity {
         mDetailBinding.setMovie(mMovie);
         mDetailBinding.executePendingBindings();
 
-        DetailViewModelFactory factory =
-                InjectorUtils.provideDetailViewModelFactory(this.getApplicationContext(), mMovie);
-        mDetailViewModel = ViewModelProviders.of(this, factory).get(DetailActivityViewModel.class);
-        mDetailViewModel.init(mMovie);
-
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-
+        // Setting up ReviewsRecyclerView
         mDetailBinding.reviewsRecyclerview.setLayoutManager(new LinearLayoutManager(this));
         mDetailBinding.reviewsRecyclerview.setHasFixedSize(true);
 
+        // Setting up VideosRecyclerView
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mDetailBinding.videosRecyclerview.setLayoutManager(linearLayoutManager);
         mDetailBinding.videosRecyclerview.setHasFixedSize(true);
+
+        // Setup toolbar
+        setSupportActionBar(mDetailBinding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        // Setup ViewModel
+        DetailViewModelFactory factory =
+                InjectorUtils.provideDetailViewModelFactory(this.getApplicationContext());
+        mDetailViewModel = ViewModelProviders.of(this, factory).get(DetailActivityViewModel.class);
+
+        // Loading data
+        mDetailViewModel.init(mMovie);
+
+        // Add/Remove from favorites
+        mDetailBinding.fabFavorite.setOnClickListener(view -> mDetailViewModel.getFavoriteMovie(mMovie.getMovieId())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<MovieEntry>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(MovieEntry movieEntry) {
+                        mDetailBinding.fabFavorite.setImageResource(R.drawable.star_off);
+                        mDetailViewModel.removeFromFavorite(mMovie);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        mDetailBinding.fabFavorite.setImageResource(R.drawable.star);
+                        mDetailViewModel.addToFavorite(mMovie);
+                    }
+                }));
 
         loadMovieImageIntoAppBar();
 
@@ -161,8 +193,35 @@ public class DetailActivity extends AppCompatActivity {
         average = average.length() == 3 && average.charAt(2) == '0' ? average.substring(0, 1) : average;
         String formattedRating = getString(R.string.rating, average, maxRating);
         mDetailBinding.rating.setText(formattedRating);
-    }
 
+        /***********************
+         * FAB image*
+         **********************/
+        mDetailViewModel.getFavoriteMovie(mMovie.getMovieId())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<MovieEntry>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(MovieEntry movieEntry) {
+                        mDetailBinding.fabFavorite.setImageResource(R.drawable.star);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        mDetailBinding.fabFavorite.setImageResource(R.drawable.star_off);
+                    }
+                });
+    }
 
     private void bindReviewToUi(List<ReviewEntry> reviewEntries) {
         if (!reviewEntries.isEmpty()) {
@@ -190,11 +249,9 @@ public class DetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                subscribeDataStreams();
                 onBackPressed();
                 return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
