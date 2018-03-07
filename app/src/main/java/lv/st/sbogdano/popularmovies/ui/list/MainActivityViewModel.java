@@ -26,6 +26,10 @@ public class MainActivityViewModel extends ViewModel {
         mRepository = repository;
     }
 
+    public LiveData<Resource<List<MovieEntry>>> getMovies() {
+        return mMovies;
+    }
+
     public void init() {
         mType = Preferences.getMoviesType();
         load();
@@ -33,10 +37,6 @@ public class MainActivityViewModel extends ViewModel {
 
     private void load() {
         mMovies = mRepository.loadMovies(mType);
-    }
-
-    public LiveData<Resource<List<MovieEntry>>> getMovies() {
-        return mMovies;
     }
 
     public void onResume() {

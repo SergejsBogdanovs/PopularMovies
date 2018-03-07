@@ -35,7 +35,7 @@
                     android:id="@+id/appbar_image"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/app_bar_height"
-                    android:contentDescription="TODO"
+                    android:contentDescription="@string/app_bar_image"
                     android:fitsSystemWindows="true"
                     android:scaleType="centerCrop"
                     app:layout_collapseMode="parallax" />

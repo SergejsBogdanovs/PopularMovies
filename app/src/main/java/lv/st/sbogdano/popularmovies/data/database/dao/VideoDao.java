@@ -8,32 +8,17 @@ import android.arch.persistence.room.Query;
 
 import java.util.List;
 
-import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
+import lv.st.sbogdano.popularmovies.data.model.content.Video;
 
-/**
- * Created by sbogdano on 04/03/2018.
- */
 @Dao
 public interface VideoDao {
 
-    /**
-     * Select all entries.
-     * @return {@LiveData} list of all videos.
-     */
     @Query("SELECT * FROM videos")
-    LiveData<List<VideoEntry>> getVideos();
+    LiveData<List<Video>> getVideos();
 
-    /**
-     * Inserts a list of {@link VideoEntry} into the movies table.
-     * @param videoEntries
-     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertAllVideos(VideoEntry... videoEntries);
+    void insertAllVideos(List<Video> videos);
 
-    /**
-     * Deletes all movies.
-     */
     @Query("DELETE FROM videos")
     void deleteOldVideos();
-
 }

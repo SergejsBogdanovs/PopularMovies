@@ -1,21 +1,13 @@
 package lv.st.sbogdano.popularmovies.utilities;
 
-import android.content.Context;
-import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.widget.ImageView;
 
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import lv.st.sbogdano.popularmovies.AppDelegate;
 import lv.st.sbogdano.popularmovies.BuildConfig;
-import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.model.content.Movie;
-
-import static lv.st.sbogdano.popularmovies.ui.detail.DetailActivity.IMAGE;
 
 public final class Images {
     public static final String WIDTH_185 = "w185";

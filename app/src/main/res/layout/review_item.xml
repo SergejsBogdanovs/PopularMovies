@@ -6,7 +6,7 @@
 
         <variable
             name="review"
-            type="lv.st.sbogdano.popularmovies.data.database.ReviewEntry" />
+            type="lv.st.sbogdano.popularmovies.data.model.content.Review" />
     </data>
 
     <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"

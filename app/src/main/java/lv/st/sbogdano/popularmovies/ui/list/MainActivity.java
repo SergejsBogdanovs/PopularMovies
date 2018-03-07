@@ -1,6 +1,5 @@
 package lv.st.sbogdano.popularmovies.ui.list;
 
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -8,25 +7,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
-import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.model.Resource;
-import lv.st.sbogdano.popularmovies.data.model.content.Movie;
 import lv.st.sbogdano.popularmovies.databinding.ActivityMainBinding;
 import lv.st.sbogdano.popularmovies.ui.adapters.MoviesAdapter;
 import lv.st.sbogdano.popularmovies.ui.detail.DetailActivity;
@@ -36,7 +28,6 @@ import lv.st.sbogdano.popularmovies.utilities.InjectorUtils;
 public class MainActivity extends AppCompatActivity
         implements MoviesAdapter.MoviesAdapterOnItemClickHandler {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
     private int mPosition = RecyclerView.NO_POSITION;
     private MainActivityViewModel mViewModel;
     private MoviesAdapter mMoviesAdapter;
@@ -58,9 +49,14 @@ public class MainActivity extends AppCompatActivity
         mViewModel = ViewModelProviders.of(this, factory).get(MainActivityViewModel.class);
         mViewModel.init();
 
-        subscribeDataStreams();
-
         initViews();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mViewModel.onResume();
+        subscribeDataStreams();
     }
 
     private void initViews() {
@@ -94,29 +90,31 @@ public class MainActivity extends AppCompatActivity
 
     private void subscribeDataStreams() {
         mViewModel.getMovies().observe(this, resources -> {
-            switch (resources.status) {
-                case SUCCESS: {
-                    showMoviesInUi(resources.data);
-                    break;
-                }
-                case LOADING: {
-                    showLoading();
+            if (resources != null) {
+                switch (resources.status) {
+                    case SUCCESS: {
+                        if (resources.data != null) {
+                            showMoviesInUi(resources.data);
+                        } else {
+                            mMainBinding.noData.setVisibility(View.VISIBLE);
+                        }
+                        break;
+                    }
+                    case LOADING: {
+                        showLoading();
+                    }
                 }
             }
         });
     }
 
     private void showMoviesInUi(List<MovieEntry> movies) {
+        showMoviesDataView();
         mMoviesAdapter.swapMovies(movies);
         if (mPosition == RecyclerView.NO_POSITION) {
             mPosition = 0;
         }
         mMainBinding.recyclerviewMovies.smoothScrollToPosition(mPosition);
-        if (movies != null && movies.size() != 0) {
-            showMoviesDataView();
-        } else {
-            showLoading();
-        }
     }
 
     /**
@@ -153,17 +151,17 @@ public class MainActivity extends AppCompatActivity
             switch (menuItem.getItemId()) {
                 case R.id.popular:
                     Preferences.setPrefs(getString(R.string.movie_default_type));
-                    restartViewModel();
+                    onResume();
                     break;
 
                 case R.id.top_rated:
                     Preferences.setPrefs(getString(R.string.movie_top_rated));
-                    restartViewModel();
+                    onResume();
                     break;
 
                 case R.id.favorite:
                     Preferences.setPrefs(getString(R.string.movie_favorite));
-                    restartViewModel();
+                    onResume();
                     break;
             }
             return true;
@@ -171,12 +169,6 @@ public class MainActivity extends AppCompatActivity
 
         popup.show();
     }
-
-    private void restartViewModel() {
-        mViewModel.onResume();
-        subscribeDataStreams();
-    }
-
 
     /**
      * This method will make the View for the movie data visible and hide the error message and

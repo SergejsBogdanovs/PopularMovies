@@ -1,11 +1,9 @@
 package lv.st.sbogdano.popularmovies.ui.detail;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
-import android.graphics.Movie;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -14,35 +12,25 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.transition.Slide;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import butterknife.ButterKnife;
-import io.reactivex.Maybe;
 import io.reactivex.MaybeObserver;
-import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.R;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
-import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
-import lv.st.sbogdano.popularmovies.data.model.MoviesType;
+import lv.st.sbogdano.popularmovies.data.model.content.Review;
+import lv.st.sbogdano.popularmovies.data.model.content.Video;
 import lv.st.sbogdano.popularmovies.databinding.ActivityDetailBinding;
 import lv.st.sbogdano.popularmovies.ui.adapters.ReviewsAdapter;
 import lv.st.sbogdano.popularmovies.ui.adapters.VideosAdapter;
@@ -110,8 +98,8 @@ public class DetailActivity extends AppCompatActivity {
                 InjectorUtils.provideDetailViewModelFactory(this.getApplicationContext());
         mDetailViewModel = ViewModelProviders.of(this, factory).get(DetailActivityViewModel.class);
 
-        // Loading data
-        mDetailViewModel.init(mMovie);
+//        // Loading data
+//        mDetailViewModel.init(mMovie);
 
         // Add/Remove from favorites
         mDetailBinding.fabFavorite.setOnClickListener(view -> mDetailViewModel.getFavoriteMovie(mMovie.getMovieId())
@@ -170,11 +158,6 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
-    private void subscribeDataStreams() {
-        mDetailViewModel.getReviews().observe(this, this::bindReviewToUi);
-        mDetailViewModel.getVideos().observe(this, this::bindVideoToUi);
-    }
-
     private void bindMovieToUi() {
         /***********************
          * Movie Title and Year*
@@ -223,26 +206,59 @@ public class DetailActivity extends AppCompatActivity {
                 });
     }
 
-    private void bindReviewToUi(List<ReviewEntry> reviewEntries) {
-        if (!reviewEntries.isEmpty()) {
-            mDetailBinding.reviewTitle.setVisibility(View.VISIBLE);
-            mDetailBinding.reviewsRecyclerview.setVisibility(View.VISIBLE);
-            mDetailBinding.reviewsRecyclerview.setAdapter(new ReviewsAdapter(reviewEntries));
-        } else {
-            mDetailBinding.reviewTitle.setVisibility(View.GONE);
-            mDetailBinding.reviewsRecyclerview.setVisibility(View.GONE);
-        }
+    private void subscribeDataStreams() {
+
+        mDetailViewModel.getReviews(mMovie).observe(this, listResource -> {
+            if (listResource != null) {
+                switch (listResource.status) {
+                    case SUCCESS: {
+                        if (listResource.data != null && !listResource.data.isEmpty()) {
+                            bindReviewToUi(listResource.data);
+                        } else {
+                            mDetailBinding.reviewTitle.setVisibility(View.GONE);
+                            mDetailBinding.reviewsRecyclerview.setVisibility(View.GONE);
+                        }
+                        break;
+                    }
+                    case ERROR: {
+                        mDetailBinding.reviewTitle.setVisibility(View.GONE);
+                        mDetailBinding.reviewsRecyclerview.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
+
+        mDetailViewModel.getVideos(mMovie).observe(this, listResource -> {
+            if (listResource != null) {
+                switch (listResource.status) {
+                    case SUCCESS: {
+                        if (listResource.data != null && !listResource.data.isEmpty()) {
+                            bindVideoToUi(listResource.data);
+                        } else {
+                            mDetailBinding.videoTitle.setVisibility(View.GONE);
+                            mDetailBinding.videosRecyclerview.setVisibility(View.GONE);
+                        }
+                        break;
+                    }
+                    case ERROR: {
+                        mDetailBinding.videoTitle.setVisibility(View.GONE);
+                        mDetailBinding.videosRecyclerview.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
     }
 
-    private void bindVideoToUi(List<VideoEntry> videoEntries) {
-        if (!videoEntries.isEmpty()) {
-            mDetailBinding.videoTitle.setVisibility(View.VISIBLE);
-            mDetailBinding.videosRecyclerview.setVisibility(View.VISIBLE);
-            mDetailBinding.videosRecyclerview.setAdapter(new VideosAdapter(this, videoEntries));
-        } else {
-            mDetailBinding.videoTitle.setVisibility(View.GONE);
-            mDetailBinding.videosRecyclerview.setVisibility(View.GONE);
-        }
+    private void bindReviewToUi(List<Review> reviews) {
+        mDetailBinding.reviewTitle.setVisibility(View.VISIBLE);
+        mDetailBinding.reviewsRecyclerview.setVisibility(View.VISIBLE);
+        mDetailBinding.reviewsRecyclerview.setAdapter(new ReviewsAdapter(reviews));
+    }
+
+    private void bindVideoToUi(List<Video> videos) {
+        mDetailBinding.videoTitle.setVisibility(View.VISIBLE);
+        mDetailBinding.videosRecyclerview.setVisibility(View.VISIBLE);
+        mDetailBinding.videosRecyclerview.setAdapter(new VideosAdapter(this, videos));
     }
 
     @Override

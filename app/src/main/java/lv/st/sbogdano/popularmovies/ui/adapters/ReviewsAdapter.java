@@ -12,17 +12,17 @@ import java.util.List;
 
 import lv.st.sbogdano.popularmovies.BR;
 import lv.st.sbogdano.popularmovies.R;
-import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
+import lv.st.sbogdano.popularmovies.data.model.content.Review;
 
 /**
  * ReviewAdapter for movie reviews
  */
 public class ReviewsAdapter extends RecyclerView.Adapter<ReviewsAdapter.ViewHolder>{
 
-    private List<ReviewEntry> mReviewEntries;
+    private List<Review> mReviewEntries;
 
-    public ReviewsAdapter(@NonNull List<ReviewEntry> reviewEntries) {
-        mReviewEntries = reviewEntries;
+    public ReviewsAdapter(@NonNull List<Review> reviews) {
+        mReviewEntries = reviews;
     }
 
     @Override
@@ -34,8 +34,8 @@ public class ReviewsAdapter extends RecyclerView.Adapter<ReviewsAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        ReviewEntry reviewEntry = mReviewEntries.get(position);
-        holder.getDataBinding().setVariable(BR.review, reviewEntry);
+        Review review = mReviewEntries.get(position);
+        holder.getDataBinding().setVariable(BR.review, review);
         holder.getDataBinding().executePendingBindings();
     }
 

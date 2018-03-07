@@ -20,21 +20,20 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import lv.st.sbogdano.popularmovies.AppDelegate;
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.R;
-import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
+import lv.st.sbogdano.popularmovies.data.model.content.Video;
 
 /**
  * Adapter to show movie trailers
  */
 public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder> {
 
-    private List<VideoEntry> mVideoEntries;
+    private List<Video> mVideos;
     private Context mContext;
 
-    public VideosAdapter(Context context, @NonNull List<VideoEntry> videoEntries) {
-        mVideoEntries = videoEntries;
+    public VideosAdapter(Context context, @NonNull List<Video> videos) {
+        mVideos = videos;
         mContext = context;
     }
 
@@ -47,7 +46,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(VideosAdapter.ViewHolder holder, int position) {
-        VideoEntry videoEntry = mVideoEntries.get(position);
+        Video video = mVideos.get(position);
 
         holder.mYouTubeThumbnailView.initialize(
                 BuildConfig.YOUTUBE_API_KEY, new YouTubeThumbnailView.OnInitializedListener() {
@@ -55,7 +54,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView,
                                                 YouTubeThumbnailLoader youTubeThumbnailLoader) {
 
-                youTubeThumbnailLoader.setVideo(videoEntry.getKey());
+                youTubeThumbnailLoader.setVideo(video.getKey());
 
                 youTubeThumbnailLoader.setOnThumbnailLoadedListener(new YouTubeThumbnailLoader.OnThumbnailLoadedListener() {
                     @Override
@@ -67,7 +66,6 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
 
                     @Override
                     public void onThumbnailError(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader.ErrorReason errorReason) {
-
                     }
                 });
             }
@@ -75,17 +73,16 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             @Override
             public void onInitializationFailure(YouTubeThumbnailView youTubeThumbnailView,
                                                 YouTubeInitializationResult youTubeInitializationResult) {
-
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        if (null == mVideoEntries) {
+        if (null == mVideos) {
             return 0;
         }
-        return mVideoEntries.size();
+        return mVideos.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -108,7 +105,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             Intent intent = YouTubeStandalonePlayer.createVideoIntent(
                     (Activity) mContext,
                     BuildConfig.YOUTUBE_API_KEY,
-                    mVideoEntries.get(getLayoutPosition()).getKey(),
+                    mVideos.get(getLayoutPosition()).getKey(),
                     100,
                     false,
                     true);

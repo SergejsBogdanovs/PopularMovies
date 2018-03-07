@@ -2,11 +2,9 @@ package lv.st.sbogdano.popularmovies.data.database;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
-import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
 
 import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 

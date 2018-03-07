@@ -8,13 +8,14 @@ import android.content.Context;
 import lv.st.sbogdano.popularmovies.data.database.dao.MoviesDao;
 import lv.st.sbogdano.popularmovies.data.database.dao.ReviewDao;
 import lv.st.sbogdano.popularmovies.data.database.dao.VideoDao;
-import lv.st.sbogdano.popularmovies.data.model.content.Movie;
+import lv.st.sbogdano.popularmovies.data.model.content.Review;
+import lv.st.sbogdano.popularmovies.data.model.content.Video;
 
 /**
  * {@link MoviesDatabase} database for the application including a table for {@link MovieEntry}
  * with the DAO {@link MoviesDao}.
  */
-@Database(entities = {MovieEntry.class, ReviewEntry.class, VideoEntry.class}, version = 1)
+@Database(entities = {MovieEntry.class, Review.class, Video.class}, version = 1)
 public abstract class MoviesDatabase extends RoomDatabase {
 
     private static final String DATABASE_NAME = "movies";

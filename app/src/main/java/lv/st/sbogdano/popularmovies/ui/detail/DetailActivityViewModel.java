@@ -7,17 +7,15 @@ import java.util.List;
 
 import io.reactivex.Maybe;
 import lv.st.sbogdano.popularmovies.data.MoviesRepository;
-import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
 import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.database.ReviewEntry;
-import lv.st.sbogdano.popularmovies.data.database.VideoEntry;
 import lv.st.sbogdano.popularmovies.data.model.Resource;
 import lv.st.sbogdano.popularmovies.data.model.content.Review;
+import lv.st.sbogdano.popularmovies.data.model.content.Video;
 
 /**
  * {@link ViewModel} for {@link DetailActivity}
  */
-public class DetailActivityViewModel extends ViewModel {
+class DetailActivityViewModel extends ViewModel {
 
     private final MoviesRepository mRepository;
 
@@ -25,27 +23,24 @@ public class DetailActivityViewModel extends ViewModel {
         mRepository = repository;
     }
 
-    void init(MovieEntry movie) {
-        mRepository.loadMovieDetails(movie);
+
+    LiveData<Resource<List<Review>>> getReviews(MovieEntry movieEntry) {
+       return mRepository.getReviews(movieEntry);
     }
 
-    public LiveData<List<ReviewEntry>> getReviews() {
-       return mRepository.getReviews();
+    LiveData<Resource<List<Video>>> getVideos(MovieEntry movieEntry) {
+       return mRepository.getVideos(movieEntry);
     }
 
-    LiveData<List<VideoEntry>> getVideos() {
-       return mRepository.getVideos();
-    }
-
-    public void removeFromFavorite(MovieEntry movie) {
+    void removeFromFavorite(MovieEntry movie) {
         mRepository.removeFromFavorite(movie);
     }
 
-    public void addToFavorite(MovieEntry movie) {
+    void addToFavorite(MovieEntry movie) {
         mRepository.addToFavorite(movie);
     }
 
-    public Maybe<MovieEntry> getFavoriteMovie(int movieId) {
+    Maybe<MovieEntry> getFavoriteMovie(int movieId) {
         return mRepository.getFavoriteMovie(movieId);
     }
 }
