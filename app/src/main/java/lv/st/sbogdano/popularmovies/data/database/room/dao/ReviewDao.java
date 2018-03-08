@@ -1,4 +1,4 @@
-package lv.st.sbogdano.popularmovies.data.database.dao;
+package lv.st.sbogdano.popularmovies.data.database.room.dao;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;

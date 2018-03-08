@@ -1,4 +1,4 @@
-package lv.st.sbogdano.popularmovies.data.database.dao;
+package lv.st.sbogdano.popularmovies.data.database.room.dao;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
@@ -9,8 +9,8 @@ import android.arch.persistence.room.Query;
 import java.util.List;
 
 import io.reactivex.Maybe;
-import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.database.MoviesDatabase;
+import lv.st.sbogdano.popularmovies.data.database.room.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.database.room.MoviesDatabase;
 
 /**
  * {@link android.arch.persistence.room.Dao}

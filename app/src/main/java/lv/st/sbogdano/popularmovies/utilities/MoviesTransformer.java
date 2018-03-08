@@ -3,7 +3,7 @@ package lv.st.sbogdano.popularmovies.utilities;
 import java.util.ArrayList;
 import java.util.List;
 
-import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.database.room.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 import lv.st.sbogdano.popularmovies.data.model.content.Movie;
 

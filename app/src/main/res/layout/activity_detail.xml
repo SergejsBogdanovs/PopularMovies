@@ -5,7 +5,7 @@
 
         <variable
             name="movie"
-            type="lv.st.sbogdano.popularmovies.data.database.MovieEntry" />
+            type="lv.st.sbogdano.popularmovies.data.database.room.MovieEntry" />
     </data>
 
     <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"

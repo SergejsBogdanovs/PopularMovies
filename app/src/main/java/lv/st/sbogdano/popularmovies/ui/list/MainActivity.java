@@ -13,12 +13,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import lv.st.sbogdano.popularmovies.R;
-import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.database.room.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 import lv.st.sbogdano.popularmovies.databinding.ActivityMainBinding;
 import lv.st.sbogdano.popularmovies.ui.adapters.MoviesAdapter;
 import lv.st.sbogdano.popularmovies.ui.detail.DetailActivity;
@@ -55,8 +61,16 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        mViewModel.onResume();
-        subscribeDataStreams();
+        MoviesType type = Preferences.getMoviesType();
+        switch (type) {
+            case FAVORITE:
+                mViewModel.onResume();
+                getFavoriteMovies();
+                break;
+            default:
+                mViewModel.onResume();
+                subscribeDataStreams();
+        }
     }
 
     private void initViews() {
@@ -88,6 +102,7 @@ public class MainActivity extends AppCompatActivity
         return new MoviesAdapter(this, new ArrayList<>(), imageWidth, imageHeight);
     }
 
+    // Getting Popular/TopRated movies using Room
     private void subscribeDataStreams() {
         mViewModel.getMovies().observe(this, resources -> {
             if (resources != null) {
@@ -106,6 +121,34 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+    }
+
+    // Getting favorite movies using ContentProvider
+    private void getFavoriteMovies() {
+        mViewModel.onResume();
+        mViewModel.getFavoriteMovies()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<MovieEntry>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(List<MovieEntry> movieEntries) {
+                        showMoviesInUi(movieEntries);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        mMainBinding.noData.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                    }
+                });
     }
 
     private void showMoviesInUi(List<MovieEntry> movies) {
@@ -161,7 +204,7 @@ public class MainActivity extends AppCompatActivity
 
                 case R.id.favorite:
                     Preferences.setPrefs(getString(R.string.movie_favorite));
-                    onResume();
+                    getFavoriteMovies();
                     break;
             }
             return true;

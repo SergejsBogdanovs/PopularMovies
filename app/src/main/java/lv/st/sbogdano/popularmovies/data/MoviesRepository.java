@@ -5,7 +5,8 @@ import android.arch.lifecycle.LiveData;
 import java.util.List;
 
 import io.reactivex.Maybe;
-import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import io.reactivex.Observable;
+import lv.st.sbogdano.popularmovies.data.database.room.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.model.Resource;
 import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 import lv.st.sbogdano.popularmovies.data.model.content.Review;
@@ -15,7 +16,9 @@ public interface MoviesRepository {
 
     LiveData<Resource<List<MovieEntry>>> loadMovies(MoviesType type);
 
-    Maybe<MovieEntry> getFavoriteMovie(int movieId);
+    Observable<List<MovieEntry>> getFavoriteMovie(int movieId);
+
+    Observable<List<MovieEntry>> getFavoriteMovies();
 
     LiveData<Resource<List<Review>>> getReviews(MovieEntry movieEntry);
 

@@ -23,12 +23,13 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 import io.reactivex.MaybeObserver;
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import lv.st.sbogdano.popularmovies.BuildConfig;
 import lv.st.sbogdano.popularmovies.R;
-import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.database.room.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.model.content.Review;
 import lv.st.sbogdano.popularmovies.data.model.content.Video;
 import lv.st.sbogdano.popularmovies.databinding.ActivityDetailBinding;
@@ -98,36 +99,39 @@ public class DetailActivity extends AppCompatActivity {
                 InjectorUtils.provideDetailViewModelFactory(this.getApplicationContext());
         mDetailViewModel = ViewModelProviders.of(this, factory).get(DetailActivityViewModel.class);
 
-//        // Loading data
-//        mDetailViewModel.init(mMovie);
 
         // Add/Remove from favorites
-        mDetailBinding.fabFavorite.setOnClickListener(view -> mDetailViewModel.getFavoriteMovie(mMovie.getMovieId())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new MaybeObserver<MovieEntry>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
+        mDetailBinding.fabFavorite.setOnClickListener(view ->
+                mDetailViewModel.getFavoriteMovie(mMovie.getMovieId())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Observer<List<MovieEntry>>() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
 
-                    }
+                            }
 
-                    @Override
-                    public void onSuccess(MovieEntry movieEntry) {
-                        mDetailBinding.fabFavorite.setImageResource(R.drawable.star_off);
-                        mDetailViewModel.removeFromFavorite(mMovie);
-                    }
+                            @Override
+                            public void onNext(List<MovieEntry> movieEntries) {
+                                if (movieEntries != null && !movieEntries.isEmpty()) {
+                                    mDetailBinding.fabFavorite.setImageResource(R.drawable.star_off);
+                                    mDetailViewModel.removeFromFavorite(mMovie);
+                                } else {
+                                    mDetailBinding.fabFavorite.setImageResource(R.drawable.star);
+                                    mDetailViewModel.addToFavorite(mMovie);
+                                }
+                            }
 
-                    @Override
-                    public void onError(Throwable e) {
+                            @Override
+                            public void onError(Throwable e) {
 
-                    }
+                            }
 
-                    @Override
-                    public void onComplete() {
-                        mDetailBinding.fabFavorite.setImageResource(R.drawable.star);
-                        mDetailViewModel.addToFavorite(mMovie);
-                    }
-                }));
+                            @Override
+                            public void onComplete() {
+
+                            }
+                        }));
 
         loadMovieImageIntoAppBar();
 
@@ -183,15 +187,19 @@ public class DetailActivity extends AppCompatActivity {
         mDetailViewModel.getFavoriteMovie(mMovie.getMovieId())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new MaybeObserver<MovieEntry>() {
+                .subscribe(new Observer<List<MovieEntry>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onSuccess(MovieEntry movieEntry) {
-                        mDetailBinding.fabFavorite.setImageResource(R.drawable.star);
+                    public void onNext(List<MovieEntry> movieEntries) {
+                        if (movieEntries != null && !movieEntries.isEmpty()) {
+                            mDetailBinding.fabFavorite.setImageResource(R.drawable.star);
+                        } else {
+                            mDetailBinding.fabFavorite.setImageResource(R.drawable.star_off);
+                        }
                     }
 
                     @Override
@@ -201,7 +209,7 @@ public class DetailActivity extends AppCompatActivity {
 
                     @Override
                     public void onComplete() {
-                        mDetailBinding.fabFavorite.setImageResource(R.drawable.star_off);
+
                     }
                 });
     }

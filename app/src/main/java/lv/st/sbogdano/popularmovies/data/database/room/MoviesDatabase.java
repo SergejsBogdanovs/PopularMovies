@@ -1,13 +1,13 @@
-package lv.st.sbogdano.popularmovies.data.database;
+package lv.st.sbogdano.popularmovies.data.database.room;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 
-import lv.st.sbogdano.popularmovies.data.database.dao.MoviesDao;
-import lv.st.sbogdano.popularmovies.data.database.dao.ReviewDao;
-import lv.st.sbogdano.popularmovies.data.database.dao.VideoDao;
+import lv.st.sbogdano.popularmovies.data.database.room.dao.MoviesDao;
+import lv.st.sbogdano.popularmovies.data.database.room.dao.ReviewDao;
+import lv.st.sbogdano.popularmovies.data.database.room.dao.VideoDao;
 import lv.st.sbogdano.popularmovies.data.model.content.Review;
 import lv.st.sbogdano.popularmovies.data.model.content.Video;
 

@@ -1,4 +1,4 @@
-package lv.st.sbogdano.popularmovies.data.database;
+package lv.st.sbogdano.popularmovies.data.database.room;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;

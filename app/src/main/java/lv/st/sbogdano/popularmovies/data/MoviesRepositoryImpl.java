@@ -6,23 +6,25 @@ import android.support.annotation.Nullable;
 
 import java.util.List;
 
-import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import lv.st.sbogdano.popularmovies.AppExecutors;
 import lv.st.sbogdano.popularmovies.data.api.ApiResponse;
 import lv.st.sbogdano.popularmovies.data.api.MovieService;
 import lv.st.sbogdano.popularmovies.data.api.ServiceGenerator;
-import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
-import lv.st.sbogdano.popularmovies.data.database.dao.MoviesDao;
-import lv.st.sbogdano.popularmovies.data.database.dao.ReviewDao;
-import lv.st.sbogdano.popularmovies.data.database.dao.VideoDao;
+import lv.st.sbogdano.popularmovies.data.database.room.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.database.room.dao.MoviesDao;
+import lv.st.sbogdano.popularmovies.data.database.room.dao.ReviewDao;
+import lv.st.sbogdano.popularmovies.data.database.room.dao.VideoDao;
+import lv.st.sbogdano.popularmovies.data.database.sqlite.FavoriteMoviesUtils;
+import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 import lv.st.sbogdano.popularmovies.data.model.Resource;
 import lv.st.sbogdano.popularmovies.data.model.content.Review;
 import lv.st.sbogdano.popularmovies.data.model.content.Video;
 import lv.st.sbogdano.popularmovies.data.model.response.MoviesResponse;
 import lv.st.sbogdano.popularmovies.data.model.response.ReviewsResponse;
 import lv.st.sbogdano.popularmovies.data.model.response.VideosResponse;
+import lv.st.sbogdano.popularmovies.utilities.CursorObservable;
 import lv.st.sbogdano.popularmovies.utilities.MoviesTransformer;
-import lv.st.sbogdano.popularmovies.data.model.MoviesType;
 
 /**
  * Handles data operations in PopularMovies. Acts as a mediator between {@link MovieService}
@@ -156,20 +158,23 @@ public class MoviesRepositoryImpl implements MoviesRepository {
 
     @Override
     public void addToFavorite(MovieEntry movie) {
-        mExecutors.diskIO().execute(() -> {
-            MovieEntry favoriteMovie = new MovieEntry(movie);
-            mMoviesDao.insertFavorite(favoriteMovie);
-        });
+        mExecutors.diskIO().execute(() -> FavoriteMoviesUtils.insert(movie));
     }
 
     @Override
     public void removeFromFavorite(MovieEntry movie) {
-        mExecutors.diskIO().execute(() ->
-                mMoviesDao.deleteMovieFromFavorite(movie.getMovieId(), MoviesType.FAVORITE.name()));
+        mExecutors.diskIO().execute(() -> FavoriteMoviesUtils.delete(movie));
     }
 
     @Override
-    public Maybe<MovieEntry> getFavoriteMovie(int movieId) {
-        return mMoviesDao.getFavoriteMovie(movieId, MoviesType.FAVORITE.name());
+    public Observable<List<MovieEntry>> getFavoriteMovie(int movieId) {
+        return CursorObservable.getCursorObservable(FavoriteMoviesUtils.getFavoriteMovie(movieId))
+                .map(new CursorListMapper<>(FavoriteMoviesUtils::fromCursor));
+    }
+
+    @Override
+    public Observable<List<MovieEntry>> getFavoriteMovies() {
+        return CursorObservable.getCursorObservable(FavoriteMoviesUtils.getFavoriteMovies())
+                .map(new CursorListMapper<>(FavoriteMoviesUtils::fromCursor));
     }
 }

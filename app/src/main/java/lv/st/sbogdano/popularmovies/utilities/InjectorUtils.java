@@ -5,7 +5,7 @@ import android.content.Context;
 import lv.st.sbogdano.popularmovies.AppExecutors;
 import lv.st.sbogdano.popularmovies.data.MoviesRepository;
 import lv.st.sbogdano.popularmovies.data.MoviesRepositoryImpl;
-import lv.st.sbogdano.popularmovies.data.database.MoviesDatabase;
+import lv.st.sbogdano.popularmovies.data.database.room.MoviesDatabase;
 import lv.st.sbogdano.popularmovies.ui.detail.DetailViewModelFactory;
 import lv.st.sbogdano.popularmovies.ui.list.MainViewModelFactory;
 

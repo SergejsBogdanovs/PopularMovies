@@ -5,9 +5,9 @@ import android.arch.lifecycle.ViewModel;
 
 import java.util.List;
 
-import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import lv.st.sbogdano.popularmovies.data.MoviesRepository;
-import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.database.room.MovieEntry;
 import lv.st.sbogdano.popularmovies.data.model.Resource;
 import lv.st.sbogdano.popularmovies.data.model.content.Review;
 import lv.st.sbogdano.popularmovies.data.model.content.Video;
@@ -40,7 +40,7 @@ class DetailActivityViewModel extends ViewModel {
         mRepository.addToFavorite(movie);
     }
 
-    Maybe<MovieEntry> getFavoriteMovie(int movieId) {
+    Observable<List<MovieEntry>> getFavoriteMovie(int movieId) {
         return mRepository.getFavoriteMovie(movieId);
     }
 }

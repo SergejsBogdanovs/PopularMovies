@@ -7,7 +7,7 @@ import com.squareup.picasso.Picasso;
 
 import lv.st.sbogdano.popularmovies.AppDelegate;
 import lv.st.sbogdano.popularmovies.BuildConfig;
-import lv.st.sbogdano.popularmovies.data.database.MovieEntry;
+import lv.st.sbogdano.popularmovies.data.database.room.MovieEntry;
 
 public final class Images {
     public static final String WIDTH_185 = "w185";

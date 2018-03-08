@@ -30,6 +30,11 @@
                 android:value=".ui.list.MainActivity">
             </meta-data>
         </activity>
+        
+        <provider
+            android:authorities="lv.st.sbogdano.popularmovies"
+            android:name=".data.database.sqlite.FavoriteMoviesProvider"
+            android:exported="false"/>
 
     </application>
 
