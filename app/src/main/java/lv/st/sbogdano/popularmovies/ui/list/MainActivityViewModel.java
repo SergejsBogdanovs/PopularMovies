@@ -56,7 +56,7 @@ public class MainActivityViewModel extends ViewModel {
 
     public void onResume() {
         MoviesType type = Preferences.getMoviesType();
-        if (mType != type) {
+        if (mType != type || type == MoviesType.FAVORITE) {
             switch (type) {
                 case FAVORITE:
                     loadFavorite();

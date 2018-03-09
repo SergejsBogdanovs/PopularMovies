@@ -6,6 +6,7 @@ import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -16,10 +17,12 @@ import android.transition.Slide;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.MaybeObserver;
@@ -99,7 +102,6 @@ public class DetailActivity extends AppCompatActivity {
                 InjectorUtils.provideDetailViewModelFactory(this.getApplicationContext());
         mDetailViewModel = ViewModelProviders.of(this, factory).get(DetailActivityViewModel.class);
 
-
         // Add/Remove from favorites
         mDetailBinding.fabFavorite.setOnClickListener(view ->
                 mDetailViewModel.getFavoriteMovie(mMovie.getMovieId())
@@ -166,7 +168,10 @@ public class DetailActivity extends AppCompatActivity {
         /***********************
          * Movie Title and Year*
          **********************/
-        String year = mMovie.getReleasedDate().substring(0, 4);
+        String year = "-";
+        if (!mMovie.getReleasedDate().isEmpty()) {
+            year = mMovie.getReleasedDate().substring(0, 4);
+        }
         String title = mMovie.getTitle();
         String formattedTitle = getString(R.string.movie_title, title, year);
         mDetailBinding.movieTitle.setText(formattedTitle);
@@ -182,7 +187,7 @@ public class DetailActivity extends AppCompatActivity {
         mDetailBinding.rating.setText(formattedRating);
 
         /***********************
-         * FAB image*
+         * FAB image *
          **********************/
         mDetailViewModel.getFavoriteMovie(mMovie.getMovieId())
                 .subscribeOn(Schedulers.io())

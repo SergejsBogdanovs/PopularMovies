@@ -3,10 +3,12 @@ package lv.st.sbogdano.popularmovies.ui.list;
 import android.arch.lifecycle.ViewModelProviders;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +22,7 @@ import java.util.List;
 
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.Nullable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import lv.st.sbogdano.popularmovies.R;
@@ -34,7 +37,10 @@ import lv.st.sbogdano.popularmovies.utilities.InjectorUtils;
 public class MainActivity extends AppCompatActivity
         implements MoviesAdapter.MoviesAdapterOnItemClickHandler {
 
-    private int mPosition = RecyclerView.NO_POSITION;
+    private static final String BUNDLE_RECYCLER_LAYOUT = "recycler_layout_state";
+    private Parcelable mState;
+    private static Bundle mBundleRecyclerViewState;
+
     private MainActivityViewModel mViewModel;
     private MoviesAdapter mMoviesAdapter;
 
@@ -55,35 +61,65 @@ public class MainActivity extends AppCompatActivity
         mViewModel = ViewModelProviders.of(this, factory).get(MainActivityViewModel.class);
         mViewModel.init();
 
+        reloadData();
+
         initViews();
     }
+
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (mBundleRecyclerViewState != null) {
+            mState = mBundleRecyclerViewState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
+            mMainBinding.recyclerviewMovies.getLayoutManager().onRestoreInstanceState(mState);
+        }
+
         MoviesType type = Preferences.getMoviesType();
         switch (type) {
             case FAVORITE:
                 mViewModel.onResume();
                 getFavoriteMovies();
                 break;
-            default:
-                mViewModel.onResume();
-                subscribeDataStreams();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // save RecyclerView state
+        mBundleRecyclerViewState = new Bundle();
+        mState = mMainBinding.recyclerviewMovies.getLayoutManager().onSaveInstanceState();
+        mBundleRecyclerViewState.putParcelable(BUNDLE_RECYCLER_LAYOUT, mState);
+    }
+
+    private void reloadData() {
+        mViewModel.onResume();
+        subscribeDataStreams();
     }
 
     private void initViews() {
 
-        int columns = this.getResources().getInteger(R.integer.columns_count);
-
         // Set up movies view
         mMainBinding.recyclerviewMovies.setHasFixedSize(true);
-        mMainBinding.recyclerviewMovies.setLayoutManager(new GridLayoutManager(this, columns));
+        mMainBinding.recyclerviewMovies.setLayoutManager(new GridLayoutManager(this, numberOfColumns()));
 
         mMoviesAdapter = getMoviesAdapter();
 
         mMainBinding.recyclerviewMovies.setAdapter(mMoviesAdapter);
+    }
+
+    private int numberOfColumns() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        // You can change this divider to adjust the size of the poster
+        int widthDivider = 500;
+        int width = displayMetrics.widthPixels;
+        int nColumns = width / widthDivider;
+        if (nColumns < 2) return 2; //to keep the grid aspect
+        return nColumns;
     }
 
     private MoviesAdapter getMoviesAdapter() {
@@ -125,7 +161,7 @@ public class MainActivity extends AppCompatActivity
 
     // Getting favorite movies using ContentProvider
     private void getFavoriteMovies() {
-        mViewModel.onResume();
+       // mViewModel.onResume();
         mViewModel.getFavoriteMovies()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -154,10 +190,7 @@ public class MainActivity extends AppCompatActivity
     private void showMoviesInUi(List<MovieEntry> movies) {
         showMoviesDataView();
         mMoviesAdapter.swapMovies(movies);
-        if (mPosition == RecyclerView.NO_POSITION) {
-            mPosition = 0;
-        }
-        mMainBinding.recyclerviewMovies.smoothScrollToPosition(mPosition);
+        mMainBinding.recyclerviewMovies.getLayoutManager().onRestoreInstanceState(mState);
     }
 
     /**
@@ -194,17 +227,20 @@ public class MainActivity extends AppCompatActivity
             switch (menuItem.getItemId()) {
                 case R.id.popular:
                     Preferences.setPrefs(getString(R.string.movie_default_type));
-                    onResume();
+                    reloadData();
+                    mMainBinding.recyclerviewMovies.smoothScrollToPosition(0);
                     break;
 
                 case R.id.top_rated:
                     Preferences.setPrefs(getString(R.string.movie_top_rated));
-                    onResume();
+                    reloadData();
+                    mMainBinding.recyclerviewMovies.smoothScrollToPosition(0);
                     break;
 
                 case R.id.favorite:
                     Preferences.setPrefs(getString(R.string.movie_favorite));
-                    getFavoriteMovies();
+                    onResume();
+                    mMainBinding.recyclerviewMovies.smoothScrollToPosition(0);
                     break;
             }
             return true;
